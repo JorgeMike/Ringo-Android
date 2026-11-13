@@ -37,6 +37,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.rudoestudio.tiempofuera.R
 import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
+import com.rudoestudio.tiempofuera.core.designsystem.color
+import com.rudoestudio.tiempofuera.core.designsystem.colorObscuro
+import com.rudoestudio.tiempofuera.domain.luchadores.Rareza
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BadgeTemporizador
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BannerError
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BarraProgresoParalelogramo
@@ -64,14 +67,6 @@ import com.rudoestudio.tiempofuera.domain.servicios.HapticService.TipoNotificaci
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import kotlin.random.Random
-
-/** Colores de cada rareza (como `Rareza.color`/`colorObscuro` de iOS) hasta que exista M2.6. */
-private val coloresRareza = listOf(
-    "Común" to (ColoresTF.Celeste to ColoresTF.Azul),
-    "Raro" to (ColoresTF.Verde to ColoresTF.VerdeObscuro),
-    "Épico" to (ColoresTF.Morado to ColoresTF.MoradoObscuro),
-    "Legendario" to (ColoresTF.Amarillo to ColoresTF.AmarilloObscuro),
-)
 
 /**
  * Herramienta de desarrollo: muestra los componentes de M0.6 para compararlos con iOS en
@@ -144,15 +139,15 @@ fun GaleriaScreen(alVolver: () -> Unit) {
         }
 
         Seccion("Luchador") {
-            coloresRareza.forEachIndexed { i, (nombre, colores) ->
+            Rareza.entries.forEachIndexed { i, rareza ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Box(Modifier.size(90.dp), contentAlignment = Alignment.Center) {
-                        FondoLuchador(colores.first, colores.second, Modifier.size(90.dp))
+                        FondoLuchador(rareza.color, rareza.colorObscuro, Modifier.size(90.dp))
                         Image(painterResource(R.drawable.ringo), contentDescription = null, modifier = Modifier.size(70.dp))
                     }
                     IndicadorNivelLuchador(
-                        nivel = 10 + i * 25, progreso = progreso, nombre = nombre,
-                        colorRareza = colores.first, colorRarezaObscuro = colores.second,
+                        nivel = 10 + i * 25, progreso = progreso, nombre = rareza.nombreVisible,
+                        colorRareza = rareza.color, colorRarezaObscuro = rareza.colorObscuro,
                         muestraIndicadorSubirNivel = i == 3,
                     )
                 }
