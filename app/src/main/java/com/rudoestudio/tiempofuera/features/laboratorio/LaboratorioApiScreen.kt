@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BotonL
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BotonRegresar
+import com.rudoestudio.tiempofuera.domain.configuracion.TipoGrupoApps
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -40,13 +41,17 @@ private val formatoHora = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneI
 
 /** Herramienta de desarrollo (M1): login real contra staging. Quitar el acceso antes de publicar. */
 @Composable
-fun LaboratorioApiScreen(alVolver: () -> Unit, viewModel: LaboratorioApiViewModel = hiltViewModel()) {
+fun LaboratorioApiScreen(
+    alVolver: () -> Unit,
+    alAbrirPermisos: () -> Unit,
+    alElegirApps: (TipoGrupoApps) -> Unit,
+    viewModel: LaboratorioApiViewModel = hiltViewModel(),
+) {
     val sesion by viewModel.sesion.collectAsStateWithLifecycle()
     val bitacora by viewModel.bitacora.collectAsStateWithLifecycle()
     val ocupado by viewModel.ocupado.collectAsStateWithLifecycle()
     var email by rememberSaveable { mutableStateOf("") }
     var codigo by rememberSaveable { mutableStateOf("") }
-    var paquete by rememberSaveable { mutableStateOf("com.google.android.youtube") }
     val colores = OutlinedTextFieldDefaults.colors(
         focusedTextColor = ColoresTF.Blanco, unfocusedTextColor = ColoresTF.Blanco,
         focusedBorderColor = ColoresTF.Amarillo, unfocusedBorderColor = ColoresTF.Blanco,
@@ -99,15 +104,12 @@ fun LaboratorioApiScreen(alVolver: () -> Unit, viewModel: LaboratorioApiViewMode
         BotonL(ColoresTF.Rojo, "Cerrar sesión", alTocar = viewModel::salir, habilitado = !ocupado && s != null)
 
         Text("Bloqueo · M3", style = MaterialTheme.typography.headlineMedium, color = ColoresTF.Blanco)
-        OutlinedTextField(
-            paquete, { paquete = it.trim() }, label = { Text("Paquete de la app") }, singleLine = true, colors = colores,
-            modifier = Modifier.fillMaxWidth(),
-        )
         BotonL(ColoresTF.Celeste, "Revisar permisos", alTocar = viewModel::revisarPermisos)
-        BotonL(ColoresTF.Morado, "Abrir Accesibilidad", alTocar = viewModel::abrirAccesibilidad)
-        BotonL(ColoresTF.Morado, "Abrir Acceso al uso", alTocar = viewModel::abrirAccesoAlUso)
-        BotonL(ColoresTF.Amarillo, "Misión: bloquear 2 min", alTocar = { viewModel.bloquearPorMision(paquete, 2) }, habilitado = !ocupado)
-        BotonL(ColoresTF.Naranja, "Límite diario de 1 min", alTocar = { viewModel.ponerLimite(paquete, 1) }, habilitado = !ocupado)
+        BotonL(ColoresTF.Morado, "Pantalla de permisos", alTocar = alAbrirPermisos)
+        BotonL(ColoresTF.Morado, "Elegir apps: distracción", alTocar = { alElegirApps(TipoGrupoApps.DISTRACCION) })
+        BotonL(ColoresTF.Morado, "Elegir apps: educativas", alTocar = { alElegirApps(TipoGrupoApps.EDUCATIVAS) })
+        BotonL(ColoresTF.Amarillo, "Misión: bloquear 2 min", alTocar = { viewModel.bloquearPorMision(2) }, habilitado = !ocupado)
+        BotonL(ColoresTF.Naranja, "Límite diario de 1 min", alTocar = { viewModel.ponerLimite(1) }, habilitado = !ocupado)
         BotonL(ColoresTF.Verde, "Quitar bloqueos", alTocar = viewModel::quitarBloqueos, habilitado = !ocupado)
 
         bitacora.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = ColoresTF.Blanco, modifier = Modifier.fillMaxWidth()) }

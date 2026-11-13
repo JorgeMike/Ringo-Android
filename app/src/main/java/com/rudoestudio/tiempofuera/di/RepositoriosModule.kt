@@ -4,6 +4,7 @@ import com.rudoestudio.tiempofuera.data.auth.AuthRepositoryImpl
 import com.rudoestudio.tiempofuera.data.auth.SesionStoreCifrada
 import com.rudoestudio.tiempofuera.data.bloqueo.AppBlockingDataStore
 import com.rudoestudio.tiempofuera.data.bloqueo.AppSelectionDataStore
+import com.rudoestudio.tiempofuera.data.bloqueo.AppsInstaladasAndroid
 import com.rudoestudio.tiempofuera.data.bloqueo.ProgresoSeguimientoDataStore
 import com.rudoestudio.tiempofuera.data.bloqueo.TiempoBloqueadoDataStore
 import com.rudoestudio.tiempofuera.data.bloqueo.UsoAppsUsageStats
@@ -26,6 +27,8 @@ import com.rudoestudio.tiempofuera.domain.auth.AuthRepository
 import com.rudoestudio.tiempofuera.domain.auth.SesionStore
 import com.rudoestudio.tiempofuera.domain.bloqueo.AppBlockingRepository
 import com.rudoestudio.tiempofuera.domain.bloqueo.AppSelectionRepository
+import com.rudoestudio.tiempofuera.domain.bloqueo.AppsInstaladas
+import com.rudoestudio.tiempofuera.domain.bloqueo.RevisorPermisos
 import com.rudoestudio.tiempofuera.domain.bloqueo.ProgresoSeguimientoRepository
 import com.rudoestudio.tiempofuera.domain.bloqueo.TiempoBloqueadoRepository
 import com.rudoestudio.tiempofuera.domain.bloqueo.TiempoExtraAppsImpl
@@ -46,6 +49,7 @@ import com.rudoestudio.tiempofuera.domain.perfil.ProgresoDiarioRepository
 import com.rudoestudio.tiempofuera.domain.perfil.UserProfileRepository
 import com.rudoestudio.tiempofuera.domain.sincronizacion.UserApiRepository
 import com.rudoestudio.tiempofuera.domain.tienda.TiempoExtraApps
+import com.rudoestudio.tiempofuera.servicios.bloqueo.PermisosBloqueo
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -124,4 +128,10 @@ abstract class RepositoriosModule {
 
     @Binds
     abstract fun tiempoExtra(impl: TiempoExtraAppsImpl): TiempoExtraApps
+
+    @Binds
+    abstract fun appsInstaladas(impl: AppsInstaladasAndroid): AppsInstaladas
+
+    @Binds
+    abstract fun revisorPermisos(impl: PermisosBloqueo): RevisorPermisos
 }

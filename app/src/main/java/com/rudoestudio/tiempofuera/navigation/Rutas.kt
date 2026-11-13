@@ -36,3 +36,15 @@ data object Galeria
 /** Laboratorio para probar el API (herramienta de desarrollo, no existe en iOS). */
 @Serializable
 data object LaboratorioApi
+
+/** Permisos del bloqueo (M3.1). En iOS es parte del paso 10 del onboarding. */
+@Serializable
+data object PermisosBloqueo
+
+/** Aviso de accesibilidad que pide Google Play antes del permiso (no existe en iOS). */
+@Serializable
+data object AvisoAccesibilidad
+
+/** Elegir las apps de un grupo (M3.2). [grupo] es la clave de `TipoGrupoApps`. */
+@Serializable
+data class SelectorApps(val grupo: String)

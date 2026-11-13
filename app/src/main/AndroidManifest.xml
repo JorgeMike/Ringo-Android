@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- tiempo-fuera-api (M1). -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Avisos de racha e hitos de uso (M3.1, M12). Se pide con el diálogo del sistema (Android 13+). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Medir el uso de apps (M3.4). El usuario lo da en Ajustes → Acceso al uso (M3.1). -->
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"

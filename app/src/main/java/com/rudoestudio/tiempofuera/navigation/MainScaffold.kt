@@ -34,6 +34,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
 import com.rudoestudio.tiempofuera.core.logging.AppLogger
+import com.rudoestudio.tiempofuera.features.bloqueo.AvisoAccesibilidadScreen
+import com.rudoestudio.tiempofuera.features.bloqueo.PermisosBloqueoScreen
+import com.rudoestudio.tiempofuera.features.bloqueo.SelectorAppsScreen
 import com.rudoestudio.tiempofuera.features.galeria.GaleriaScreen
 import com.rudoestudio.tiempofuera.features.home.HomeScreen
 import com.rudoestudio.tiempofuera.features.laboratorio.LaboratorioApiScreen
@@ -160,7 +163,24 @@ fun MainScaffold(
                 GaleriaScreen(alVolver = { navController.popBackStack() })
             }
             composable<LaboratorioApi> {
-                LaboratorioApiScreen(alVolver = { navController.popBackStack() })
+                LaboratorioApiScreen(
+                    alVolver = { navController.popBackStack() },
+                    alAbrirPermisos = { navController.navigate(PermisosBloqueo) },
+                    alElegirApps = { grupo -> navController.navigate(SelectorApps(grupo.clave)) },
+                )
+            }
+            composable<PermisosBloqueo> {
+                PermisosBloqueoScreen(
+                    alAbrirAvisoAccesibilidad = { navController.navigate(AvisoAccesibilidad) },
+                    alTerminar = { navController.popBackStack() },
+                    alVolver = { navController.popBackStack() },
+                )
+            }
+            composable<AvisoAccesibilidad> {
+                AvisoAccesibilidadScreen(alVolver = { navController.popBackStack() })
+            }
+            composable<SelectorApps> {
+                SelectorAppsScreen(alTerminar = { navController.popBackStack() })
             }
         }
     }

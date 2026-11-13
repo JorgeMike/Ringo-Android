@@ -1,6 +1,5 @@
 package com.rudoestudio.tiempofuera.features.laboratorio
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rudoestudio.tiempofuera.BuildConfig
@@ -11,14 +10,13 @@ import com.rudoestudio.tiempofuera.domain.auth.SesionStore
 import com.rudoestudio.tiempofuera.domain.auth.SesionUsuario
 import com.rudoestudio.tiempofuera.domain.auth.VerificarCodigoUseCase
 import com.rudoestudio.tiempofuera.domain.bloqueo.DetenerBloqueoAppsUseCase
-import com.rudoestudio.tiempofuera.domain.bloqueo.GuardarSeleccionAppsUseCase
 import com.rudoestudio.tiempofuera.domain.bloqueo.IniciarBloqueoAppsUseCase
+import com.rudoestudio.tiempofuera.domain.bloqueo.ObtenerSeleccionAppsUseCase
 import com.rudoestudio.tiempofuera.domain.bloqueo.UsoApps
 import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionGrupoApps
 import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionGrupoAppsRepository
 import com.rudoestudio.tiempofuera.domain.configuracion.TipoGrupoApps
 import com.rudoestudio.tiempofuera.servicios.bloqueo.PermisosBloqueo
-import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Duration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,8 +39,8 @@ class LaboratorioApiViewModel @Inject constructor(
     private val cerrarSesion: CerrarSesionUseCase,
     private val sesionStore: SesionStore,
     private val api: ApiTiempoFuera,
-    @ApplicationContext private val contexto: Context,
-    private val guardarSeleccion: GuardarSeleccionAppsUseCase,
+    private val permisos: PermisosBloqueo,
+    private val obtenerSeleccion: ObtenerSeleccionAppsUseCase,
     private val iniciarBloqueo: IniciarBloqueoAppsUseCase,
     private val detenerBloqueo: DetenerBloqueoAppsUseCase,
     private val configuraciones: ConfiguracionGrupoAppsRepository,
@@ -91,24 +89,19 @@ class LaboratorioApiViewModel @Inject constructor(
     // region Bloqueo (M3): todo sobre el grupo de distracción
 
     fun revisarPermisos() = ejecutar("Permisos del bloqueo") {
-        "accesibilidad=${PermisosBloqueo.accesibilidadActiva(contexto)} accesoAlUso=${PermisosBloqueo.accesoAlUso(contexto)}"
+        permisos.estado().toString()
     }
 
-    fun abrirAccesibilidad() = PermisosBloqueo.abrirAccesibilidad(contexto)
-
-    fun abrirAccesoAlUso() = PermisosBloqueo.abrirAccesoAlUso(contexto)
-
-    fun bloquearPorMision(paquete: String, minutos: Long) = ejecutar("Misión: bloquear $paquete $minutos min") {
-        guardarSeleccion(TipoGrupoApps.DISTRACCION, setOf(paquete))
+    fun bloquearPorMision(minutos: Long) = ejecutar("Misión: bloquear distracción $minutos min") {
         iniciarBloqueo(TipoGrupoApps.DISTRACCION, Duration.ofMinutes(minutos))
-        "Listo: ábrela para ver la pantalla de bloqueo"
+        "Listo: abre una de tus apps de distracción"
     }
 
-    fun ponerLimite(paquete: String, minutos: Long) = ejecutar("Límite de $minutos min a $paquete") {
-        guardarSeleccion(TipoGrupoApps.DISTRACCION, setOf(paquete))
+    fun ponerLimite(minutos: Long) = ejecutar("Límite de $minutos min a distracción") {
         configuraciones.guardar(ConfiguracionGrupoApps(TipoGrupoApps.DISTRACCION, tiempoMaximoDiario = minutos * 60), TipoGrupoApps.DISTRACCION.clave)
-        val usado = uso.usoDeHoy()[paquete]?.toMinutes() ?: 0
-        "Llevas $usado min hoy en esa app"
+        val paquetes = obtenerSeleccion(TipoGrupoApps.DISTRACCION)?.paquetes.orEmpty()
+        val usado = uso.usoDeHoy().filterKeys { it in paquetes }.values.sumOf { it.toMinutes() }
+        "Llevas $usado min hoy en tus ${paquetes.size} apps de distracción"
     }
 
     fun quitarBloqueos() = ejecutar("Quitar bloqueos") {

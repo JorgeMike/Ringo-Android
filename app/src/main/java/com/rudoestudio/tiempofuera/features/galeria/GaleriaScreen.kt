@@ -32,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -52,6 +53,7 @@ import com.rudoestudio.tiempofuera.core.designsystem.componentes.FondoLuchador
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.HeaderPuntos
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IconoBotonS
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IndicadorNivelLuchador
+import com.rudoestudio.tiempofuera.core.designsystem.componentes.IconoApp
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IndicadorTiempo
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.SeccionRecompensas
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.TemporizadorBadges
@@ -151,6 +153,15 @@ fun GaleriaScreen(alVolver: () -> Unit) {
                         muestraIndicadorSubirNivel = i == 3,
                     )
                 }
+            }
+        }
+
+        Seccion("Íconos de apps · M3.2") {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                // Ajustes y la propia app existen en cualquier teléfono; el último no existe (cuadro gris).
+                IconoApp("com.android.settings")
+                IconoApp(LocalContext.current.packageName)
+                IconoApp("app.que.no.existe")
             }
         }
 
