@@ -1,0 +1,270 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "08b0beda4c6468dafedb8e6dea038c82",
+    "entities": [
+      {
+        "tableName": "luchador_progreso",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `cantidad` INTEGER NOT NULL, `nivel` INTEGER NOT NULL, `puntosPoder` INTEGER NOT NULL, `rareza` TEXT NOT NULL, `skinEquipada` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cantidad",
+            "columnName": "cantidad",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nivel",
+            "columnName": "nivel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "puntosPoder",
+            "columnName": "puntosPoder",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rareza",
+            "columnName": "rareza",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "skinEquipada",
+            "columnName": "skinEquipada",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "progreso_liga",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ligaId` INTEGER NOT NULL, `totalExp` REAL NOT NULL, `nivelActualId` INTEGER NOT NULL, `nivelesDesbloqueados` TEXT NOT NULL, PRIMARY KEY(`ligaId`))",
+        "fields": [
+          {
+            "fieldPath": "ligaId",
+            "columnName": "ligaId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalExp",
+            "columnName": "totalExp",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nivelActualId",
+            "columnName": "nivelActualId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nivelesDesbloqueados",
+            "columnName": "nivelesDesbloqueados",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "ligaId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "progreso_diario",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`dia` TEXT NOT NULL, `misiones` TEXT NOT NULL, PRIMARY KEY(`dia`))",
+        "fields": [
+          {
+            "fieldPath": "dia",
+            "columnName": "dia",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "misiones",
+            "columnName": "misiones",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "dia"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "historico_racha",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fecha` TEXT NOT NULL, `usoProtectorRacha` INTEGER NOT NULL, PRIMARY KEY(`fecha`))",
+        "fields": [
+          {
+            "fieldPath": "fecha",
+            "columnName": "fecha",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usoProtectorRacha",
+            "columnName": "usoProtectorRacha",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "fecha"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "perfil",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `email` TEXT NOT NULL, `personalidadId` TEXT NOT NULL, `puntosPoder` INTEGER NOT NULL, `monedas` INTEGER NOT NULL, `diasRacha` INTEGER NOT NULL, `protectoresRacha` INTEGER NOT NULL, `lastActivityDate` INTEGER, `luchadorSeleccionadoId` INTEGER, `progresoLigasJson` TEXT NOT NULL, `proposito` TEXT NOT NULL, `divisionesSeleccionadas` TEXT NOT NULL, `tiempoInicial` INTEGER NOT NULL, `tiempoMaxUso` INTEGER NOT NULL, `horaInicioDia` INTEGER NOT NULL, `horaFinDia` INTEGER NOT NULL, `colchonInicioFin` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "personalidadId",
+            "columnName": "personalidadId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "puntosPoder",
+            "columnName": "puntosPoder",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "monedas",
+            "columnName": "monedas",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "diasRacha",
+            "columnName": "diasRacha",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "protectoresRacha",
+            "columnName": "protectoresRacha",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastActivityDate",
+            "columnName": "lastActivityDate",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "luchadorSeleccionadoId",
+            "columnName": "luchadorSeleccionadoId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "progresoLigasJson",
+            "columnName": "progresoLigasJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "proposito",
+            "columnName": "proposito",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "divisionesSeleccionadas",
+            "columnName": "divisionesSeleccionadas",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tiempoInicial",
+            "columnName": "tiempoInicial",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tiempoMaxUso",
+            "columnName": "tiempoMaxUso",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "horaInicioDia",
+            "columnName": "horaInicioDia",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "horaFinDia",
+            "columnName": "horaFinDia",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "colchonInicioFin",
+            "columnName": "colchonInicioFin",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '08b0beda4c6468dafedb8e6dea038c82')"
+    ]
+  }
+}

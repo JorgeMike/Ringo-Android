@@ -48,7 +48,14 @@ android {
     testOptions {
         // AppLogger usa android.util.Log: en tests de JVM regresa valores por defecto.
         unitTests.isReturnDefaultValues = true
+        // Robolectric (tests de Room) necesita los recursos de Android.
+        unitTests.isIncludeAndroidResources = true
     }
+}
+
+ksp {
+    // El esquema de cada versión de la base se versiona en git: lo necesitan las migraciones.
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -70,6 +77,9 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging) // solo se activa en debug (RedModule)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
@@ -78,4 +88,6 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.okhttp.mockwebserver)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
 }

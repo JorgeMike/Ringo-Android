@@ -50,6 +50,15 @@ app/src/main/java/com/rudoestudio/tiempofuera/
   en inglés.
 - **Al portar algo de iOS**, mencionar en el KDoc el nombre del archivo o tipo de iOS
   (p. ej. "en iOS: `MainTabView`"). Así es fácil comparar las dos versiones.
+- **Catálogo del juego** (luchadores, misiones, ligas): vive en código, en
+  `data/catalogo`, y **no se edita a mano**. Se genera desde las `SeedData` de iOS con
+  `python3 scripts/importar_semillas_ios.py ../TiempoFuera-iOS/Ringo-iOS/Data/SeedData`;
+  `CatalogoTest` revisa que la conversión salió bien. La base (Room) solo guarda el
+  progreso del usuario encima del catálogo.
+- **Room:** cada cambio de esquema sube `version` en `BaseDatosTiempoFuera` y lleva su
+  migración; el esquema de cada versión se versiona en `app/schemas`. Lo que en iOS va en
+  UserDefaults va en DataStore como JSON (`AlmacenJson`); los nombres de
+  `data/local/Guardados.kt` y las claves no se cambian (romperían lo ya guardado).
 - **Pantallas pendientes** usan `PantallaPendiente(titulo, tarea)` con el ID del tablero.
 - **Componentes:** antes de crear uno nuevo, revisar `core/designsystem/componentes` y la
   **galería** (Inicio → "Galería de componentes", `features/galeria`). Un componente nuevo
