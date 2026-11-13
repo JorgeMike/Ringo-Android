@@ -2,6 +2,11 @@ package com.rudoestudio.tiempofuera.di
 
 import com.rudoestudio.tiempofuera.data.auth.AuthRepositoryImpl
 import com.rudoestudio.tiempofuera.data.auth.SesionStoreCifrada
+import com.rudoestudio.tiempofuera.data.bloqueo.AppBlockingDataStore
+import com.rudoestudio.tiempofuera.data.bloqueo.AppSelectionDataStore
+import com.rudoestudio.tiempofuera.data.bloqueo.ProgresoSeguimientoDataStore
+import com.rudoestudio.tiempofuera.data.bloqueo.TiempoBloqueadoDataStore
+import com.rudoestudio.tiempofuera.data.bloqueo.UsoAppsUsageStats
 import com.rudoestudio.tiempofuera.data.configuracion.ConfiguracionGrupoAppsDataStore
 import com.rudoestudio.tiempofuera.data.configuracion.ConfiguracionHabitoSuenoDataStore
 import com.rudoestudio.tiempofuera.data.ligas.LigaRepositoryCatalogo
@@ -19,6 +24,12 @@ import com.rudoestudio.tiempofuera.data.perfil.UserProfileRepositoryRoom
 import com.rudoestudio.tiempofuera.data.usuario.UserApiRepositoryImpl
 import com.rudoestudio.tiempofuera.domain.auth.AuthRepository
 import com.rudoestudio.tiempofuera.domain.auth.SesionStore
+import com.rudoestudio.tiempofuera.domain.bloqueo.AppBlockingRepository
+import com.rudoestudio.tiempofuera.domain.bloqueo.AppSelectionRepository
+import com.rudoestudio.tiempofuera.domain.bloqueo.ProgresoSeguimientoRepository
+import com.rudoestudio.tiempofuera.domain.bloqueo.TiempoBloqueadoRepository
+import com.rudoestudio.tiempofuera.domain.bloqueo.TiempoExtraAppsImpl
+import com.rudoestudio.tiempofuera.domain.bloqueo.UsoApps
 import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionGrupoAppsRepository
 import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionHabitoSuenoRepository
 import com.rudoestudio.tiempofuera.domain.ligas.LigaRepository
@@ -34,6 +45,7 @@ import com.rudoestudio.tiempofuera.domain.perfil.HistoricoRachaRepository
 import com.rudoestudio.tiempofuera.domain.perfil.ProgresoDiarioRepository
 import com.rudoestudio.tiempofuera.domain.perfil.UserProfileRepository
 import com.rudoestudio.tiempofuera.domain.sincronizacion.UserApiRepository
+import com.rudoestudio.tiempofuera.domain.tienda.TiempoExtraApps
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -94,4 +106,22 @@ abstract class RepositoriosModule {
 
     @Binds
     abstract fun perfilLocalSeeder(impl: PerfilLocalSeederRoom): PerfilLocalSeeder
+
+    @Binds
+    abstract fun seleccionApps(impl: AppSelectionDataStore): AppSelectionRepository
+
+    @Binds
+    abstract fun bloqueos(impl: AppBlockingDataStore): AppBlockingRepository
+
+    @Binds
+    abstract fun progresoSeguimiento(impl: ProgresoSeguimientoDataStore): ProgresoSeguimientoRepository
+
+    @Binds
+    abstract fun tiempoBloqueado(impl: TiempoBloqueadoDataStore): TiempoBloqueadoRepository
+
+    @Binds
+    abstract fun usoApps(impl: UsoAppsUsageStats): UsoApps
+
+    @Binds
+    abstract fun tiempoExtra(impl: TiempoExtraAppsImpl): TiempoExtraApps
 }
