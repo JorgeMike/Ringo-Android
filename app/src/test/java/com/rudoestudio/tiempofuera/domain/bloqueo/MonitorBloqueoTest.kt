@@ -125,7 +125,7 @@ class MonitorBloqueoTest {
         uso.minutos = 31 // dos hitos de golpe: solo se avisa el último
         monitor(reloj(hoy, 12, 30)).evaluar()
         monitor(reloj(hoy, 12, 31)).evaluar()
-        assertEquals(listOf("Llevas 30m en el cel bro, déjalo tantito 😅"), notificaciones.mostradas.map { it.second })
+        assertEquals(listOf("Llevas 31m en el cel bro, déjalo tantito 😅"), notificaciones.mostradas.map { it.second })
         assertEquals(reloj(hoy, 12, 30).instant(), progreso.ultimoUso) // a las 12:31 no hubo uso nuevo
     }
 

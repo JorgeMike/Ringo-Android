@@ -104,11 +104,18 @@ class LaboratorioApiViewModel @Inject constructor(
         "Llevas $usado min hoy en tus ${paquetes.size} apps de distracción"
     }
 
-    fun avisarCadaMinuto() = ejecutar("Avisos de uso cada minuto en distracción") {
+    /**
+     * Como iOS, solo se avisan los primeros 10 hitos del día: si ya se usó la app, un
+     * intervalo de 1 min ya quedó atrás. Se elige uno para que el siguiente hito caiga un
+     * minuto después del uso de hoy.
+     */
+    fun avisarEnUnMinuto() = ejecutar("Aviso de uso en 1 min de distracción") {
         val clave = TipoGrupoApps.DISTRACCION.clave
+        val paquetes = obtenerSeleccion(TipoGrupoApps.DISTRACCION)?.paquetes.orEmpty()
+        val usado = uso.usoDeHoy().filterKeys { it in paquetes }.values.sumOf { it.toMinutes() }
         val actual = configuraciones.obtenerConfiguracion(clave) ?: ConfiguracionGrupoApps(TipoGrupoApps.DISTRACCION)
-        configuraciones.guardar(actual.copy(intervaloHito = 60), clave)
-        "Listo: usa una app de distracción y cada minuto llega un aviso (máximo 10 al día)"
+        configuraciones.guardar(actual.copy(intervaloHito = (usado + 1) * 60), clave)
+        "Llevas $usado min: usa una app de distracción 1 min más y llega el aviso"
     }
 
     fun quitarBloqueos() = ejecutar("Quitar bloqueos") {

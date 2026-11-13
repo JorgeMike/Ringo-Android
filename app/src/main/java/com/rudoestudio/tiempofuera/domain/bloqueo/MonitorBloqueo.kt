@@ -56,7 +56,8 @@ class MonitorBloqueo @Inject constructor(
         val intervalo = HitosUso.intervalo(config) ?: return
         val hitos = minOf(segundos / intervalo, HitosUso.tope(config.tipo))
         if (hitos <= yaAvisados) return
-        val minutos = hitos * intervalo / 60
+        // Los minutos reales: si se juntaron hitos (o se llegó al tope), "hitos × intervalo" se queda corto.
+        val minutos = segundos / 60
         notificaciones.mostrar(
             id = "tracking.$grupoId.notificacion.$hitos.${LocalDate.now(reloj)}",
             titulo = HitosUso.titulo(config.tipo),
