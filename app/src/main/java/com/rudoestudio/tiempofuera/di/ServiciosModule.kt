@@ -1,10 +1,12 @@
 package com.rudoestudio.tiempofuera.di
 
 import com.rudoestudio.tiempofuera.core.hapticos.HapticServiceAndroid
+import com.rudoestudio.tiempofuera.core.notificaciones.NotificationServiceAndroid
 import com.rudoestudio.tiempofuera.domain.luchadores.CalculadorDeNivel
 import com.rudoestudio.tiempofuera.domain.luchadores.NivelPoderCalculator
 import com.rudoestudio.tiempofuera.domain.servicios.AlcanceApp
 import com.rudoestudio.tiempofuera.domain.servicios.HapticService
+import com.rudoestudio.tiempofuera.domain.servicios.NotificationService
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -24,6 +26,9 @@ abstract class ServiciosModule {
 
     @Binds
     abstract fun haptic(impl: HapticServiceAndroid): HapticService
+
+    @Binds
+    abstract fun notificaciones(impl: NotificationServiceAndroid): NotificationService
 
     companion object {
         /** La hora y el día del teléfono. Los tests pasan un `Clock` fijo. */

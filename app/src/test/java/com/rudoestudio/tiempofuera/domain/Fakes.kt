@@ -22,6 +22,7 @@ import com.rudoestudio.tiempofuera.domain.perfil.PropositoUsuario
 import com.rudoestudio.tiempofuera.domain.perfil.TipoPersonalidad
 import com.rudoestudio.tiempofuera.domain.perfil.UserProfile
 import com.rudoestudio.tiempofuera.domain.perfil.UserProfileRepository
+import com.rudoestudio.tiempofuera.domain.servicios.CanalNotificacion
 import com.rudoestudio.tiempofuera.domain.servicios.NotificationService
 import com.rudoestudio.tiempofuera.domain.sincronizacion.ActualizacionPerfil
 import com.rudoestudio.tiempofuera.domain.sincronizacion.ProgresoUsuarioRemoto
@@ -82,6 +83,11 @@ class HistoricoFake : HistoricoRachaRepository {
 
 class NotificacionesFake : NotificationService {
     val canceladas = mutableListOf<String>()
+    val mostradas = mutableListOf<Pair<String, String>>() // id, cuerpo
+
+    override fun mostrar(id: String, titulo: String, cuerpo: String, canal: CanalNotificacion, deepLink: String?) {
+        mostradas += id to cuerpo
+    }
 
     override fun programarNotificacion(id: String, titulo: String, cuerpo: String, fecha: Instant) = Unit
 

@@ -68,6 +68,8 @@ interface ProgresoSeguimientoRepository {
     suspend fun registrarUnidadesTrackingReclamadas(grupoId: String, misionId: Int, unidades: Int)
 
     suspend fun gruposConLimiteAlcanzado(): List<String>
+
+    suspend fun registrarHitosNotificados(grupoId: String, hitos: Long)
 }
 
 /** En iOS: `TiempoBloqueadoRepositoryProtocol`. */

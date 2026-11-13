@@ -61,6 +61,11 @@
                 <data android:scheme="ringo" android:host="id-mision" />
             </intent-filter>
         </activity>
+        <!-- Notificaciones programadas (M12). -->
+        <receiver
+            android:name=".core.notificaciones.ReceptorNotificacion"
+            android:exported="false" />
+
         <!-- Bloqueo de apps (M3.5). -->
         <service
             android:name=".servicios.bloqueo.ServicioBloqueo"

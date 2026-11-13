@@ -110,6 +110,7 @@ fun LaboratorioApiScreen(
         BotonL(ColoresTF.Morado, "Elegir apps: educativas", alTocar = { alElegirApps(TipoGrupoApps.EDUCATIVAS) })
         BotonL(ColoresTF.Amarillo, "Misión: bloquear 2 min", alTocar = { viewModel.bloquearPorMision(2) }, habilitado = !ocupado)
         BotonL(ColoresTF.Naranja, "Límite diario de 1 min", alTocar = { viewModel.ponerLimite(1) }, habilitado = !ocupado)
+        BotonL(ColoresTF.Celeste, "Avisar uso cada minuto", alTocar = viewModel::avisarCadaMinuto, habilitado = !ocupado)
         BotonL(ColoresTF.Verde, "Quitar bloqueos", alTocar = viewModel::quitarBloqueos, habilitado = !ocupado)
 
         bitacora.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = ColoresTF.Blanco, modifier = Modifier.fillMaxWidth()) }

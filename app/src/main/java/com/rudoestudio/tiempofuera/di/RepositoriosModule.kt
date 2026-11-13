@@ -6,6 +6,7 @@ import com.rudoestudio.tiempofuera.data.bloqueo.AppBlockingDataStore
 import com.rudoestudio.tiempofuera.data.bloqueo.AppSelectionDataStore
 import com.rudoestudio.tiempofuera.data.bloqueo.AppsInstaladasAndroid
 import com.rudoestudio.tiempofuera.data.bloqueo.ProgresoSeguimientoDataStore
+import com.rudoestudio.tiempofuera.data.bloqueo.ProteccionDataStore
 import com.rudoestudio.tiempofuera.data.bloqueo.TiempoBloqueadoDataStore
 import com.rudoestudio.tiempofuera.data.bloqueo.UsoAppsUsageStats
 import com.rudoestudio.tiempofuera.data.configuracion.ConfiguracionGrupoAppsDataStore
@@ -30,6 +31,7 @@ import com.rudoestudio.tiempofuera.domain.bloqueo.AppSelectionRepository
 import com.rudoestudio.tiempofuera.domain.bloqueo.AppsInstaladas
 import com.rudoestudio.tiempofuera.domain.bloqueo.RevisorPermisos
 import com.rudoestudio.tiempofuera.domain.bloqueo.ProgresoSeguimientoRepository
+import com.rudoestudio.tiempofuera.domain.bloqueo.ProteccionRepository
 import com.rudoestudio.tiempofuera.domain.bloqueo.TiempoBloqueadoRepository
 import com.rudoestudio.tiempofuera.domain.bloqueo.TiempoExtraAppsImpl
 import com.rudoestudio.tiempofuera.domain.bloqueo.UsoApps
@@ -134,4 +136,7 @@ abstract class RepositoriosModule {
 
     @Binds
     abstract fun revisorPermisos(impl: PermisosBloqueo): RevisorPermisos
+
+    @Binds
+    abstract fun proteccion(impl: ProteccionDataStore): ProteccionRepository
 }

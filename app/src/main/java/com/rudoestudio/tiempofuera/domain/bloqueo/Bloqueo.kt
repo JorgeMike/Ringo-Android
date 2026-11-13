@@ -145,6 +145,8 @@ data class ProgresoSeguimientoGrupo(
     val ultimaRachaRecompensadaEn: Instant? = null,
     /** Vueltas ya cobradas por misión de tracking (id de misión → vueltas). */
     val unidadesTrackingReclamadas: Map<Int, Int> = emptyMap(),
+    /** Hitos de uso ya avisados hoy (para no repetir la notificación). */
+    val hitosNotificados: Long = 0,
 )
 
 /** Un rato con apps bloqueadas. */

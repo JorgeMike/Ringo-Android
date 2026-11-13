@@ -104,6 +104,13 @@ class LaboratorioApiViewModel @Inject constructor(
         "Llevas $usado min hoy en tus ${paquetes.size} apps de distracción"
     }
 
+    fun avisarCadaMinuto() = ejecutar("Avisos de uso cada minuto en distracción") {
+        val clave = TipoGrupoApps.DISTRACCION.clave
+        val actual = configuraciones.obtenerConfiguracion(clave) ?: ConfiguracionGrupoApps(TipoGrupoApps.DISTRACCION)
+        configuraciones.guardar(actual.copy(intervaloHito = 60), clave)
+        "Listo: usa una app de distracción y cada minuto llega un aviso (máximo 10 al día)"
+    }
+
     fun quitarBloqueos() = ejecutar("Quitar bloqueos") {
         detenerBloqueo(TipoGrupoApps.DISTRACCION)
         configuraciones.eliminar(TipoGrupoApps.DISTRACCION.clave)

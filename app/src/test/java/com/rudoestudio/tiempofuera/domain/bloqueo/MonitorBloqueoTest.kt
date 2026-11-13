@@ -4,6 +4,7 @@ import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionGrupoApps
 import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionGrupoAppsRepository
 import com.rudoestudio.tiempofuera.domain.configuracion.TipoGrupoApps
 import com.rudoestudio.tiempofuera.domain.reloj
+import com.rudoestudio.tiempofuera.domain.NotificacionesFake
 import com.rudoestudio.tiempofuera.domain.SuenoFake
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,21 +62,27 @@ class MonitorBloqueoTest {
     private val progreso = object : ProgresoSeguimientoRepository {
         var acumulado = 0L
         var limite = false
-        override suspend fun obtener(grupoId: String) = null
+        var hitos = 0L
+        var ultimoUso: Instant? = null
+        override suspend fun obtener(grupoId: String) =
+            ProgresoSeguimientoGrupo(hoy, segundosAcumulados = acumulado, limiteMaximoAlcanzado = limite, ultimoUsoEn = ultimoUso, hitosNotificados = hitos)
         override suspend fun registrarTiempoAcumulado(grupoId: String, segundosTotales: Long) { acumulado = maxOf(acumulado, segundosTotales) }
         override suspend fun marcarLimiteAlcanzado(grupoId: String) { limite = true }
         override suspend fun otorgarTiempoExtra(grupoId: String, segundos: Int) = Unit
-        override suspend fun registrarUltimoUso(grupoId: String, fecha: Instant) = Unit
+        override suspend fun registrarUltimoUso(grupoId: String, fecha: Instant) { ultimoUso = fecha }
+        override suspend fun registrarHitosNotificados(grupoId: String, hitos: Long) { this.hitos = maxOf(this.hitos, hitos) }
         override suspend fun marcarRachaRecompensada(grupoId: String, fecha: Instant) = Unit
         override suspend fun unidadesTrackingReclamadas(grupoId: String, misionId: Int) = 0
         override suspend fun registrarUnidadesTrackingReclamadas(grupoId: String, misionId: Int, unidades: Int) = Unit
         override suspend fun gruposConLimiteAlcanzado() = if (limite) listOf(distraccion) else emptyList()
     }
 
+    private val notificaciones = NotificacionesFake()
+
     private fun monitor(reloj: Clock): MonitorBloqueo {
         tiempoBloqueado.zona = reloj.zone
         val estado = ObtenerEstadoBloqueoUseCase(selecciones, configuraciones, bloqueos, SuenoFake(), uso)
-        return MonitorBloqueo(estado, tiempoBloqueado, progreso, reloj)
+        return MonitorBloqueo(estado, tiempoBloqueado, progreso, notificaciones, reloj)
     }
 
     @Test
@@ -105,5 +112,30 @@ class MonitorBloqueoTest {
         tiempoBloqueado.iniciarBloqueo(distraccion, MotivoBloqueo.MISION, reloj(hoy, 10).instant())
         monitor(reloj(hoy, 10, 30)).evaluar()
         assertEquals(30 * 60L, tiempoBloqueado.tiempoBloqueadoHoy(reloj(hoy, 18).instant()))
+    }
+
+    @Test
+    fun `avisa cada hito una sola vez, y el ultimo uso se mueve solo si se uso`() = runTest {
+        configuraciones.guardar(ConfiguracionGrupoApps(TipoGrupoApps.DISTRACCION, intervaloHito = 900), distraccion)
+        uso.minutos = 14
+        monitor(reloj(hoy, 12)).evaluar()
+        assertTrue(notificaciones.mostradas.isEmpty())
+        assertEquals(reloj(hoy, 12).instant(), progreso.ultimoUso)
+
+        uso.minutos = 31 // dos hitos de golpe: solo se avisa el último
+        monitor(reloj(hoy, 12, 30)).evaluar()
+        monitor(reloj(hoy, 12, 31)).evaluar()
+        assertEquals(listOf("Llevas 30m en el cel bro, déjalo tantito 😅"), notificaciones.mostradas.map { it.second })
+        assertEquals(reloj(hoy, 12, 30).instant(), progreso.ultimoUso) // a las 12:31 no hubo uso nuevo
+    }
+
+    @Test
+    fun `las educativas avisan cada 5 minutos aunque no tengan intervalo`() = runTest {
+        val educativas = TipoGrupoApps.EDUCATIVAS.clave
+        selecciones.guardarSeleccion(SeleccionAppsGrupo(educativas, setOf("com.instagram")))
+        configuraciones.guardar(ConfiguracionGrupoApps(TipoGrupoApps.EDUCATIVAS), educativas)
+        uso.minutos = 10
+        monitor(reloj(hoy, 12)).evaluar()
+        assertTrue(notificaciones.mostradas.any { it.second.startsWith("Acumulaste 10m en tus apps educativas") })
     }
 }

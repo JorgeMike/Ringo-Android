@@ -11,9 +11,12 @@ import android.view.accessibility.AccessibilityWindowInfo
 import com.rudoestudio.tiempofuera.core.logging.AppLogger
 import com.rudoestudio.tiempofuera.domain.bloqueo.AppBlockingRepository
 import com.rudoestudio.tiempofuera.domain.bloqueo.AppSelectionRepository
+import com.rudoestudio.tiempofuera.domain.bloqueo.AtenderProteccionUseCase
+import com.rudoestudio.tiempofuera.domain.bloqueo.ProteccionRepository
 import com.rudoestudio.tiempofuera.domain.bloqueo.GrupoBloqueado
 import com.rudoestudio.tiempofuera.domain.bloqueo.MonitorBloqueo
 import com.rudoestudio.tiempofuera.domain.bloqueo.UsoApps
+import com.rudoestudio.tiempofuera.domain.servicios.AlcanceApp
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +28,9 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
 import javax.inject.Inject
 
 /**
@@ -50,6 +56,22 @@ class ServicioBloqueo : AccessibilityService() {
     @Inject
     lateinit var bloqueos: AppBlockingRepository
 
+    @Inject
+    lateinit var proteccion: ProteccionRepository
+
+    @Inject
+    lateinit var atenderProteccion: AtenderProteccionUseCase
+
+    @Inject
+    lateinit var reloj: Clock
+
+    /** Para lo que debe terminar aunque el servicio muera (p. ej. cobrar el apagado). */
+    @Inject
+    @AlcanceApp
+    lateinit var alcanceApp: CoroutineScope
+
+    private var ultimoLatido: Instant = Instant.EPOCH
+
     private val alcance = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var bloqueados: Map<String, GrupoBloqueado> = emptyMap()
     private val pantallas = HashMap<String, PantallaBloqueo>()
@@ -59,6 +81,7 @@ class ServicioBloqueo : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         AppLogger.info("Bloqueo: servicio conectado")
+        alcance.launch { proteccion.registrarConexion(reloj.instant()) }
         alcance.launch {
             while (isActive) {
                 actualizar()
@@ -93,6 +116,7 @@ class ServicioBloqueo : AccessibilityService() {
     override fun onUnbind(intent: Intent?): Boolean {
         // M3.12: aquí se entera de que apagaron la accesibilidad.
         AppLogger.warning("Bloqueo: servicio desconectado")
+        alcanceApp.launch { runCatching { atenderProteccion() }.onFailure { AppLogger.error(it, "ServicioBloqueo.onUnbind") } }
         alcance.cancel()
         quitarTodas()
         return super.onUnbind(intent)
@@ -105,6 +129,7 @@ class ServicioBloqueo : AccessibilityService() {
     }
 
     private suspend fun actualizar() {
+        latir()
         bloqueados = try {
             monitor.evaluar()
         } catch (e: Exception) {
@@ -112,6 +137,14 @@ class ServicioBloqueo : AccessibilityService() {
             bloqueados
         }
         reevaluar(latenciaMs = null)
+    }
+
+    /** Una vez por minuto basta: el vigilante la da por atorada después de 15 min sin latido. */
+    private suspend fun latir() {
+        val ahora = reloj.instant()
+        if (Duration.between(ultimoLatido, ahora) < Duration.ofMinutes(1)) return
+        ultimoLatido = ahora
+        runCatching { proteccion.registrarLatido(ahora) }
     }
 
     /** Ventanas de apps (sin sistema, teclado ni nuestras pantallas) visibles ahora. */
