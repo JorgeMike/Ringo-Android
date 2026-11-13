@@ -78,11 +78,16 @@ class MonitorBloqueoTest {
     }
 
     private val notificaciones = NotificacionesFake()
+    private val historial = object : HistorialUsoRepository {
+        val dias = mutableMapOf<LocalDate, Map<String, Long>>()
+        override suspend fun registrar(fecha: LocalDate, grupoId: String, segundos: Long) { dias[fecha] = dias[fecha].orEmpty() + (grupoId to segundos) }
+        override suspend fun ultimosDias(hasta: LocalDate, dias: Int) = this.dias.toMap()
+    }
 
     private fun monitor(reloj: Clock): MonitorBloqueo {
         tiempoBloqueado.zona = reloj.zone
         val estado = ObtenerEstadoBloqueoUseCase(selecciones, configuraciones, bloqueos, SuenoFake(), uso)
-        return MonitorBloqueo(estado, tiempoBloqueado, progreso, notificaciones, reloj)
+        return MonitorBloqueo(estado, tiempoBloqueado, progreso, historial, notificaciones, reloj)
     }
 
     @Test
@@ -91,6 +96,7 @@ class MonitorBloqueoTest {
         uso.minutos = 59
         assertTrue(monitor(reloj(hoy, 12)).evaluar().isEmpty())
         assertEquals(59 * 60L, progreso.acumulado)
+        assertEquals(mapOf(distraccion to 59 * 60L), historial.dias[hoy])
 
         uso.minutos = 60
         assertEquals(MotivoBloqueo.LIMITE, monitor(reloj(hoy, 12, 5)).evaluar()["com.instagram"]?.motivo)

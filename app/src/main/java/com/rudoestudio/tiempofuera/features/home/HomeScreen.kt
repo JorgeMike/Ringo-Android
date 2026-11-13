@@ -15,10 +15,12 @@ fun HomeScreen(
     alAbrirPerfil: () -> Unit,
     alAbrirGaleria: () -> Unit,
     alAbrirLaboratorio: () -> Unit,
+    alAbrirEstadisticas: () -> Unit,
 ) {
     PantallaPendiente(titulo = "Inicio", tarea = "M5.1") {
         Button(onClick = { alAbrirLiga("liga-de-prueba") }) { Text("Ver una liga") }
         Button(onClick = alAbrirTiendaMonedas) { Text("Tienda de monedas") }
+        Button(onClick = alAbrirEstadisticas) { Text("Tiempo en pantalla") }
         OutlinedButton(onClick = alAbrirPerfil) { Text("Mi perfil", color = ColoresTF.Blanco) }
         OutlinedButton(onClick = alAbrirGaleria) { Text("Galería de componentes", color = ColoresTF.Blanco) }
         OutlinedButton(onClick = alAbrirLaboratorio) { Text("Laboratorio de API", color = ColoresTF.Blanco) }

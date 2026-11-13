@@ -111,4 +111,18 @@ class BloqueoRepositoriosTest {
         repo.finalizarBloqueo("distraccion", MotivoBloqueo.LIMITE, mediodia.instant().plusSeconds(600))
         assertEquals(600L, repo.tiempoBloqueadoHoy(mediodia.instant().plusSeconds(3600)))
     }
+
+    @Test
+    fun `el historial de uso nunca baja y guarda 30 dias`() = runTest {
+        val repo = HistorialUsoDataStore(almacen)
+        repo.registrar(hoy.minusDays(40), "distraccion", 999)
+        repo.registrar(hoy.minusDays(1), "distraccion", 1800)
+        repo.registrar(hoy, "distraccion", 600)
+        repo.registrar(hoy, "distraccion", 300)
+        repo.registrar(hoy, "lectura", 120)
+        val semana = repo.ultimosDias(hoy, 7)
+        assertEquals(mapOf("distraccion" to 600L, "lectura" to 120L), semana[hoy])
+        assertEquals(1800L, semana[hoy.minusDays(1)]?.get("distraccion"))
+        assertTrue(repo.ultimosDias(hoy, 60).keys.none { it == hoy.minusDays(40) })
+    }
 }

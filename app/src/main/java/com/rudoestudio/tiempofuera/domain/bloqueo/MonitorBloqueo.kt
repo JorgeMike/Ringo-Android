@@ -24,6 +24,7 @@ class MonitorBloqueo @Inject constructor(
     private val obtenerEstado: ObtenerEstadoBloqueoUseCase,
     private val tiempoBloqueado: TiempoBloqueadoRepository,
     private val progreso: ProgresoSeguimientoRepository,
+    private val historial: HistorialUsoRepository,
     private val notificaciones: NotificationService,
     private val reloj: Clock,
 ) {
@@ -41,6 +42,7 @@ class MonitorBloqueo @Inject constructor(
             val anterior = progreso.obtener(grupoId)
             if (segundos > (anterior?.segundosAcumulados ?: 0)) {
                 progreso.registrarTiempoAcumulado(grupoId, segundos)
+                historial.registrar(LocalDate.now(reloj), grupoId, segundos)
                 // En iOS es el "heartbeat" (cada 15 min de uso); aquí se sabe en cada vuelta.
                 progreso.registrarUltimoUso(grupoId, ahora)
             }

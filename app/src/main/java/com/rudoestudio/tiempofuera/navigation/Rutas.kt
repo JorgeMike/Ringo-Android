@@ -48,3 +48,7 @@ data object AvisoAccesibilidad
 /** Elegir las apps de un grupo (M3.2). [grupo] es la clave de `TipoGrupoApps`. */
 @Serializable
 data class SelectorApps(val grupo: String)
+
+/** Tiempo en pantalla y su configuración (M3.10). En iOS: `ScreenTimeStatsView`, desde Inicio. */
+@Serializable
+data object EstadisticasUso

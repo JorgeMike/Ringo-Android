@@ -37,6 +37,7 @@ import com.rudoestudio.tiempofuera.core.logging.AppLogger
 import com.rudoestudio.tiempofuera.features.bloqueo.AvisoAccesibilidadScreen
 import com.rudoestudio.tiempofuera.features.bloqueo.PermisosBloqueoScreen
 import com.rudoestudio.tiempofuera.features.bloqueo.SelectorAppsScreen
+import com.rudoestudio.tiempofuera.features.estadisticas.EstadisticasUsoScreen
 import com.rudoestudio.tiempofuera.features.galeria.GaleriaScreen
 import com.rudoestudio.tiempofuera.features.home.HomeScreen
 import com.rudoestudio.tiempofuera.features.laboratorio.LaboratorioApiScreen
@@ -137,6 +138,7 @@ fun MainScaffold(
                         alAbrirTiendaMonedas = { navController.navigate(TiendaMonedas) },
                         alAbrirGaleria = { navController.navigate(Galeria) },
                         alAbrirLaboratorio = { navController.navigate(LaboratorioApi) },
+                        alAbrirEstadisticas = { navController.navigate(EstadisticasUso) },
                         alAbrirPerfil = {
                             navController.navigate(Perfil) {
                                 popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -178,6 +180,12 @@ fun MainScaffold(
             }
             composable<AvisoAccesibilidad> {
                 AvisoAccesibilidadScreen(alVolver = { navController.popBackStack() })
+            }
+            composable<EstadisticasUso> {
+                EstadisticasUsoScreen(
+                    alVolver = { navController.popBackStack() },
+                    alElegirApps = { grupo -> navController.navigate(SelectorApps(grupo.clave)) },
+                )
             }
             composable<SelectorApps> {
                 SelectorAppsScreen(alTerminar = { navController.popBackStack() })

@@ -36,6 +36,8 @@ import com.rudoestudio.tiempofuera.core.designsystem.componentes.BotonL
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BotonRegresar
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoContorno
 import com.rudoestudio.tiempofuera.domain.bloqueo.EstadoPermisos
+import com.rudoestudio.tiempofuera.domain.bloqueo.GuiaFabricante
+import com.rudoestudio.tiempofuera.domain.bloqueo.GuiasFabricante
 
 /**
  * Los permisos del bloqueo, uno por tarjeta (M3.1). En iOS es la parte de permisos del
@@ -55,6 +57,7 @@ fun PermisosBloqueoScreen(
 
     ContenidoPermisos(
         estado = estado,
+        guia = GuiasFabricante.para(Build.MANUFACTURER),
         alActivarAccesibilidad = alAbrirAvisoAccesibilidad,
         alActivarAccesoAlUso = viewModel::abrirAccesoAlUso,
         alActivarNotificaciones = {
@@ -74,6 +77,7 @@ fun PermisosBloqueoScreen(
 @Composable
 private fun ContenidoPermisos(
     estado: EstadoPermisos,
+    guia: GuiaFabricante,
     alActivarAccesibilidad: () -> Unit,
     alActivarAccesoAlUso: () -> Unit,
     alActivarNotificaciones: () -> Unit,
@@ -121,7 +125,8 @@ private fun ContenidoPermisos(
         )
         TarjetaPermiso(
             titulo = "Batería (recomendado)",
-            descripcion = "Busca Tiempo Fuera y ponla en \"Sin restricciones\", para que Android no la apague por ahorrar pila.",
+            descripcion = "Para que tu ${guia.marca} no apague Tiempo Fuera por ahorrar pila:\n" +
+                guia.pasos.joinToString("\n") { "• $it" },
             concedido = estado.sinAhorroBateria,
             alActivar = alActivarBateria,
         )
@@ -162,5 +167,5 @@ private fun TarjetaPermiso(titulo: String, descripcion: String, concedido: Boole
 @Preview(heightDp = 900)
 @Composable
 private fun PermisosPreview() = TiempoFueraTheme {
-    ContenidoPermisos(EstadoPermisos(true, false, false, false), {}, {}, {}, {}, {}, alVolver = {})
+    ContenidoPermisos(EstadoPermisos(true, false, false, false), GuiasFabricante.para("samsung"), {}, {}, {}, {}, {}, alVolver = {})
 }
