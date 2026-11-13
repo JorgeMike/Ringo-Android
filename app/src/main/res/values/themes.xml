@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema mínimo de la ventana; los colores y fuentes reales viven en Compose (TiempoFueraTheme). -->
+    <style name="Theme.TiempoFuera" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/azul_rg</item>
+    </style>
+
+    <color name="azul_rg">#FF002D48</color>
+    <color name="celeste_rg">#FF1485C7</color>
+</resources>
