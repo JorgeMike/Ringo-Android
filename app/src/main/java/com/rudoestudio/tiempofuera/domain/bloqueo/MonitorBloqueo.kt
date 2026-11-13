@@ -45,17 +45,18 @@ class MonitorBloqueo @Inject constructor(
                 progreso.registrarUltimoUso(grupoId, ahora)
             }
             if (MotorBloqueo.limiteAlcanzado(estado, grupoId)) progreso.marcarLimiteAlcanzado(grupoId)
-            avisarHito(estado, grupoId, segundos, anterior?.hitosNotificados ?: 0)
+            avisarHito(estado, grupoId, segundos, anterior?.segundosUltimoHito ?: 0)
         }
         MotorBloqueo.paquetesBloqueados(estado, ahora, reloj.zone)
     }
 
     /** Un aviso por hito nuevo; si se juntaron varios (p. ej. tras reiniciar), solo el último. */
-    private suspend fun avisarHito(estado: EstadoBloqueo, grupoId: String, segundos: Long, yaAvisados: Long) {
+    private suspend fun avisarHito(estado: EstadoBloqueo, grupoId: String, segundos: Long, ultimoAvisado: Long) {
         val config = estado.configuraciones[grupoId] ?: return
         val intervalo = HitosUso.intervalo(config) ?: return
         val hitos = minOf(segundos / intervalo, HitosUso.tope(config.tipo))
-        if (hitos <= yaAvisados) return
+        val segundosHito = hitos * intervalo
+        if (hitos <= 0 || segundosHito <= ultimoAvisado) return
         // Los minutos reales: si se juntaron hitos (o se llegó al tope), "hitos × intervalo" se queda corto.
         val minutos = segundos / 60
         notificaciones.mostrar(
@@ -65,6 +66,6 @@ class MonitorBloqueo @Inject constructor(
             canal = CanalNotificacion.SEGUIMIENTO,
             deepLink = HitosUso.DEEP_LINK_EDUCATIVAS.takeIf { config.tipo == TipoGrupoApps.EDUCATIVAS },
         )
-        progreso.registrarHitosNotificados(grupoId, hitos)
+        progreso.registrarHitoAvisado(grupoId, segundosHito)
     }
 }

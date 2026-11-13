@@ -125,7 +125,7 @@ data class ProgresoSeguimientoGuardado(
     val ultimoUsoEnMs: Long? = null,
     val ultimaRachaRecompensadaEnMs: Long? = null,
     val unidadesTrackingReclamadas: Map<String, Int> = emptyMap(),
-    val hitosNotificados: Long = 0,
+    val segundosUltimoHito: Long = 0,
 ) {
     fun aDominio() = ProgresoSeguimientoGrupo(
         fecha = LocalDate.parse(fecha),
@@ -135,7 +135,7 @@ data class ProgresoSeguimientoGuardado(
         ultimoUsoEn = ultimoUsoEnMs?.let(Instant::ofEpochMilli),
         ultimaRachaRecompensadaEn = ultimaRachaRecompensadaEnMs?.let(Instant::ofEpochMilli),
         unidadesTrackingReclamadas = unidadesTrackingReclamadas.mapKeys { it.key.toInt() },
-        hitosNotificados = hitosNotificados,
+        segundosUltimoHito = segundosUltimoHito,
     )
 
     companion object {
@@ -147,7 +147,7 @@ data class ProgresoSeguimientoGuardado(
             ultimoUsoEnMs = p.ultimoUsoEn?.toEpochMilli(),
             ultimaRachaRecompensadaEnMs = p.ultimaRachaRecompensadaEn?.toEpochMilli(),
             unidadesTrackingReclamadas = p.unidadesTrackingReclamadas.mapKeys { it.key.toString() },
-            hitosNotificados = p.hitosNotificados,
+            segundosUltimoHito = p.segundosUltimoHito,
         )
     }
 }
@@ -187,8 +187,8 @@ class ProgresoSeguimientoDataStore @Inject constructor(
 
     override suspend fun gruposConLimiteAlcanzado(): List<String> = todos().filterValues { it.limiteMaximoAlcanzado }.keys.toList()
 
-    override suspend fun registrarHitosNotificados(grupoId: String, hitos: Long) =
-        cambiar(grupoId) { it.copy(hitosNotificados = maxOf(it.hitosNotificados, hitos)) }
+    override suspend fun registrarHitoAvisado(grupoId: String, segundos: Long) =
+        cambiar(grupoId) { it.copy(segundosUltimoHito = maxOf(it.segundosUltimoHito, segundos)) }
 
     private fun hoy(): LocalDate = LocalDate.now(reloj)
 

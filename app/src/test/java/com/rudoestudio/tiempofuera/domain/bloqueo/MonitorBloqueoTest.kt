@@ -62,15 +62,15 @@ class MonitorBloqueoTest {
     private val progreso = object : ProgresoSeguimientoRepository {
         var acumulado = 0L
         var limite = false
-        var hitos = 0L
+        var ultimoHito = 0L
         var ultimoUso: Instant? = null
         override suspend fun obtener(grupoId: String) =
-            ProgresoSeguimientoGrupo(hoy, segundosAcumulados = acumulado, limiteMaximoAlcanzado = limite, ultimoUsoEn = ultimoUso, hitosNotificados = hitos)
+            ProgresoSeguimientoGrupo(hoy, segundosAcumulados = acumulado, limiteMaximoAlcanzado = limite, ultimoUsoEn = ultimoUso, segundosUltimoHito = ultimoHito)
         override suspend fun registrarTiempoAcumulado(grupoId: String, segundosTotales: Long) { acumulado = maxOf(acumulado, segundosTotales) }
         override suspend fun marcarLimiteAlcanzado(grupoId: String) { limite = true }
         override suspend fun otorgarTiempoExtra(grupoId: String, segundos: Int) = Unit
         override suspend fun registrarUltimoUso(grupoId: String, fecha: Instant) { ultimoUso = fecha }
-        override suspend fun registrarHitosNotificados(grupoId: String, hitos: Long) { this.hitos = maxOf(this.hitos, hitos) }
+        override suspend fun registrarHitoAvisado(grupoId: String, segundos: Long) { ultimoHito = maxOf(ultimoHito, segundos) }
         override suspend fun marcarRachaRecompensada(grupoId: String, fecha: Instant) = Unit
         override suspend fun unidadesTrackingReclamadas(grupoId: String, misionId: Int) = 0
         override suspend fun registrarUnidadesTrackingReclamadas(grupoId: String, misionId: Int, unidades: Int) = Unit
@@ -137,5 +137,22 @@ class MonitorBloqueoTest {
         uso.minutos = 10
         monitor(reloj(hoy, 12)).evaluar()
         assertTrue(notificaciones.mostradas.any { it.second.startsWith("Acumulaste 10m en tus apps educativas") })
+    }
+
+    @Test
+    fun `cambiar el intervalo no deja avisos sin mandar`() = runTest {
+        // Lo que pasó en el teléfono: con 1 min se llegó al tope de 10 avisos; luego el
+        // intervalo cambió a 118 min y, al pasar de 118 min de uso, no avisó.
+        configuraciones.guardar(ConfiguracionGrupoApps(TipoGrupoApps.DISTRACCION, intervaloHito = 60), distraccion)
+        uso.minutos = 117
+        monitor(reloj(hoy, 12)).evaluar()
+        assertEquals(1, notificaciones.mostradas.size)
+
+        configuraciones.guardar(ConfiguracionGrupoApps(TipoGrupoApps.DISTRACCION, intervaloHito = 118 * 60), distraccion)
+        monitor(reloj(hoy, 12, 1)).evaluar()
+        assertEquals(1, notificaciones.mostradas.size)
+        uso.minutos = 118
+        monitor(reloj(hoy, 12, 2)).evaluar()
+        assertEquals("Llevas 118m en el cel bro, déjalo tantito 😅", notificaciones.mostradas.last().second)
     }
 }
