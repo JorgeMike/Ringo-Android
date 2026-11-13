@@ -16,6 +16,8 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +36,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.rudoestudio.tiempofuera.R
 import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
@@ -105,7 +108,7 @@ private fun BotonConTapa(
             .clickable(interaccion, indication = null, enabled = habilitado, role = Role.Button, onClick = alTocar),
     ) {
         Box(Modifier.matchParentSize().background(ColoresTF.Blanco, base))
-        Box(Modifier.matchParentSize().offset(y = desplazamiento)) {
+        Box(Modifier.matchParentSize().offset { IntOffset(0, desplazamiento.roundToPx()) }) {
             Box(Modifier.matchParentSize().background(ColoresTF.AzulNoche, contorno).border(3.dp, ColoresTF.Blanco, contorno))
             Box(Modifier.matchParentSize().background(relleno, cara))
             contenido()
@@ -186,6 +189,18 @@ fun BotonRegresar(alTocar: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 /**
+ * Pone [BotonRegresar] flotando arriba a la izquierda sobre [contenido]. En iOS:
+ * `.withBackButton()` (View+BackButton), que oculta el botón de navegación del sistema.
+ */
+@Composable
+fun ConBotonRegresar(alRegresar: () -> Unit, modifier: Modifier = Modifier, contenido: @Composable BoxScope.() -> Unit) {
+    Box(modifier) {
+        contenido()
+        BotonRegresar(alRegresar, Modifier.safeDrawingPadding().padding(start = 6.dp, top = 6.dp))
+    }
+}
+
+/**
  * Botón "3D" con sombra sólida abajo que desaparece al presionarlo. En iOS:
  * `ThreeDButtonStyle`. El tamaño lo define [contenido] (agregarle su propio padding).
  */
@@ -212,7 +227,7 @@ fun Boton3D(
         contentAlignment = Alignment.Center,
     ) {
         Box(Modifier.matchParentSize().offset(y = profundidad).alpha(opacidadSombra).background(colorSombra, forma))
-        Box(Modifier.matchParentSize().offset(y = desplazamiento).background(color, forma).border(3.dp, colorSombra, forma))
-        Box(Modifier.offset(y = desplazamiento), contentAlignment = Alignment.Center, content = contenido)
+        Box(Modifier.matchParentSize().offset { IntOffset(0, desplazamiento.roundToPx()) }.background(color, forma).border(3.dp, colorSombra, forma))
+        Box(Modifier.offset { IntOffset(0, desplazamiento.roundToPx()) }, contentAlignment = Alignment.Center, content = contenido)
     }
 }

@@ -57,6 +57,10 @@ import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoContorno
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoEnParalelogramo
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.Titulo
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.espiral
+import com.rudoestudio.tiempofuera.core.hapticos.LocalHaptics
+import com.rudoestudio.tiempofuera.core.hapticos.hapticAlTocar
+import com.rudoestudio.tiempofuera.domain.servicios.HapticService.EstiloImpacto
+import com.rudoestudio.tiempofuera.domain.servicios.HapticService.TipoNotificacion
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import kotlin.random.Random
@@ -94,7 +98,7 @@ fun GaleriaScreen(alVolver: () -> Unit) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             BotonRegresar(alVolver)
             Spacer(Modifier.width(12.dp))
-            Text("Galería · M0.6", style = MaterialTheme.typography.headlineMedium, color = ColoresTF.Blanco)
+            Text("Galería · M0", style = MaterialTheme.typography.headlineMedium, color = ColoresTF.Blanco)
         }
 
         Seccion("Botones") {
@@ -153,6 +157,44 @@ fun GaleriaScreen(alVolver: () -> Unit) {
                     )
                 }
             }
+        }
+
+        Seccion("Hápticos · M0.8") {
+            val h = LocalHaptics.current
+            val pruebas = listOf<Pair<String, () -> Unit>>(
+                "Ligero" to { h.impacto(EstiloImpacto.LIGERO) },
+                "Medio" to { h.impacto(EstiloImpacto.MEDIO) },
+                "Fuerte" to { h.impacto(EstiloImpacto.FUERTE) },
+                "Suave" to { h.impacto(EstiloImpacto.SUAVE) },
+                "Rígido" to { h.impacto(EstiloImpacto.RIGIDO) },
+                "Selección" to { h.seleccion() },
+                "Éxito" to { h.notificacion(TipoNotificacion.EXITO) },
+                "Advertencia" to { h.notificacion(TipoNotificacion.ADVERTENCIA) },
+                "Error" to { h.notificacion(TipoNotificacion.ERROR) },
+                "Sacudida 1 s" to { h.sacudidaFuerte(1.0) },
+                "Vidrio roto" to { h.vibrarRompimientoDeVidrio() },
+                "Respiración" to { h.vibrarRespiracion(0.5f) },
+            )
+            pruebas.chunked(2).forEach { fila ->
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    fila.forEach { (nombre, accion) ->
+                        Boton3D(alTocar = accion, modifier = Modifier.width(150.dp)) {
+                            Text(nombre, style = MaterialTheme.typography.titleSmall, color = ColoresTF.Blanco,
+                                modifier = Modifier.padding(vertical = 10.dp))
+                        }
+                    }
+                }
+            }
+            Text("Ticks (contador, de suave a fuerte):", style = MaterialTheme.typography.bodyMedium, color = ColoresTF.Blanco)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(0.2f, 0.4f, 0.6f, 0.8f, 1f).forEach { i ->
+                    Boton3D(alTocar = { h.vibrarTick(i) }, color = ColoresTF.Morado, colorSombra = ColoresTF.MoradoObscuro) {
+                        Text("${(i * 100).toInt()}", style = MaterialTheme.typography.titleSmall, color = ColoresTF.Blanco,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp))
+                    }
+                }
+            }
+            BotonL(ColoresTF.Celeste, "Botón con hapticAlTocar", alTocar = {}, modifier = Modifier.hapticAlTocar())
         }
 
         Seccion("Efecto espiral") {

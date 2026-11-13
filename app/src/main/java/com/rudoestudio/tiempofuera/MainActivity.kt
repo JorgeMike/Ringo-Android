@@ -7,18 +7,25 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.rudoestudio.tiempofuera.core.designsystem.TiempoFueraTheme
+import com.rudoestudio.tiempofuera.core.hapticos.LocalHaptics
+import com.rudoestudio.tiempofuera.domain.servicios.HapticService
 import com.rudoestudio.tiempofuera.navigation.DeepLink
 import com.rudoestudio.tiempofuera.navigation.RootScreen
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     /** Deep link que llegó y la UI todavía no atiende (en iOS: `.onOpenURL`). */
     private val deepLinkPendiente = MutableStateFlow<DeepLink?>(null)
+
+    @Inject
+    lateinit var haptics: HapticService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,11 +38,13 @@ class MainActivity : ComponentActivity() {
         if (savedInstanceState == null) recibir(intent)
         setContent {
             val deepLink by deepLinkPendiente.collectAsState()
-            TiempoFueraTheme {
-                RootScreen(
-                    deepLinkPendiente = deepLink,
-                    alAtenderDeepLink = { deepLinkPendiente.value = null },
-                )
+            CompositionLocalProvider(LocalHaptics provides haptics) {
+                TiempoFueraTheme {
+                    RootScreen(
+                        deepLinkPendiente = deepLink,
+                        alAtenderDeepLink = { deepLinkPendiente.value = null },
+                    )
+                }
             }
         }
     }
