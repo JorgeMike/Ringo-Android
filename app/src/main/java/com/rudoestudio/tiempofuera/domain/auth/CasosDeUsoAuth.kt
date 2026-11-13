@@ -28,9 +28,9 @@ class CerrarSesionUseCase @Inject constructor(
     private val sesionStore: SesionStore,
 ) {
     suspend operator fun invoke() {
-        val sesion = sesionStore.actual() ?: return
+        if (sesionStore.actual() == null) return
         // La sesión local se borra aunque el API no conteste: el usuario quiere salir.
-        runCatching { repositorio.cerrarSesion(sesion.refreshToken) }
+        runCatching { repositorio.cerrarSesion() }
         sesionStore.limpiar()
     }
 }

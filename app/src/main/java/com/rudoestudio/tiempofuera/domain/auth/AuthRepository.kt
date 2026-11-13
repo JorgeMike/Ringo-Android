@@ -9,6 +9,6 @@ interface AuthRepository {
 
     suspend fun verificarCodigo(email: String, codigo: String): SesionUsuario
 
-    /** Revoca el refresh token en el API. Si no hay conexión, la sesión local se borra igual. */
-    suspend fun cerrarSesion(refreshToken: String)
+    /** Revoca en el API el refresh token de la sesión actual (no borra la sesión local). */
+    suspend fun cerrarSesion()
 }

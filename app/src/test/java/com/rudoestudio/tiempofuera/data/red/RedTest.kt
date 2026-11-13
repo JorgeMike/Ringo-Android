@@ -57,7 +57,7 @@ class RedTest {
         val renovador = RenovadorSesion(sinAuth, url, json, store)
         val cliente = RedModule.cliente(sinAuth, InterceptorAuth(store, renovador), AutenticadorRenovacion(renovador))
         api = RedModule.api(cliente, url, json)
-        repo = AuthRepositoryImpl(api, json)
+        repo = AuthRepositoryImpl(api, json, store, renovador)
     }
 
     @Before
@@ -157,6 +157,24 @@ class RedTest {
 
         assertEquals("/auth/refresh", servidor.takeRequest().path)
         assertEquals("Bearer fresco", servidor.takeRequest().getHeader("Authorization"))
+    }
+
+    @Test
+    fun `cerrar sesion con token caducado manda el refresh token ya renovado`() = runBlocking {
+        // Bug encontrado probando contra staging: el logout llevaba el refresh token viejo
+        // (rotado por la renovación) y el API no revocaba la sesión nueva.
+        armar(sesion("caducado", refresh = "refresh-viejo", creadaEnMs = 0))
+        servidor.enqueue(MockResponse().setBody(sesionJson("fresco", "refresh-nuevo")))
+        servidor.enqueue(MockResponse().setBody("""{"ok":true}"""))
+
+        repo.cerrarSesion()
+
+        assertEquals("/auth/refresh", servidor.takeRequest().path)
+        val logout = servidor.takeRequest()
+        assertEquals("/auth/logout", logout.path)
+        assertEquals("Bearer fresco", logout.getHeader("Authorization"))
+        assertEquals("""{"refreshToken":"refresh-nuevo"}""", logout.body.readUtf8())
+        assertEquals(2, servidor.requestCount) // el interceptor no volvió a renovar
     }
 
     @Test

@@ -4,11 +4,15 @@ import com.rudoestudio.tiempofuera.core.logging.AppLogger
 import com.rudoestudio.tiempofuera.data.red.ApiTiempoFuera
 import com.rudoestudio.tiempofuera.data.red.PedirCodigoDto
 import com.rudoestudio.tiempofuera.data.red.RefreshDto
+import com.rudoestudio.tiempofuera.data.red.RenovadorSesion
 import com.rudoestudio.tiempofuera.data.red.VerificarCodigoDto
 import com.rudoestudio.tiempofuera.data.red.mensajeApi
 import com.rudoestudio.tiempofuera.domain.auth.AuthError
 import com.rudoestudio.tiempofuera.domain.auth.AuthRepository
+import com.rudoestudio.tiempofuera.domain.auth.SesionStore
 import com.rudoestudio.tiempofuera.domain.auth.SesionUsuario
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import retrofit2.HttpException
 import java.io.IOException
@@ -21,6 +25,8 @@ import javax.inject.Inject
 class AuthRepositoryImpl @Inject constructor(
     private val api: ApiTiempoFuera,
     private val json: Json,
+    private val sesionStore: SesionStore,
+    private val renovador: RenovadorSesion,
 ) : AuthRepository {
 
     override suspend fun enviarCodigoVerificacion(email: String) {
@@ -46,9 +52,18 @@ class AuthRepositoryImpl @Inject constructor(
             },
         ) { api.verificarCodigo(VerificarCodigoDto(email, codigo)).aDominio() }
 
-    override suspend fun cerrarSesion(refreshToken: String) {
+    override suspend fun cerrarSesion() {
+        val actual = sesionStore.actual() ?: return
+        // Renovar ANTES de leer el refresh token: si lo hiciera el interceptor a medio
+        // camino, el API rotaría el token y el logout llevaría el viejo, que ya no revoca
+        // nada (la sesión nueva quedaría viva 60 días en el servidor).
+        val vigente = if (actual.estaExpirada()) {
+            withContext(Dispatchers.IO) { renovador.renovar(actual.accessToken) } ?: return
+        } else {
+            actual
+        }
         llamar(alError = { _, mensaje -> mensaje?.let(AuthError::Desconocido) ?: AuthError.Desconocido() }) {
-            api.cerrarSesion(RefreshDto(refreshToken))
+            api.cerrarSesion(RefreshDto(vigente.refreshToken))
         }
     }
 
