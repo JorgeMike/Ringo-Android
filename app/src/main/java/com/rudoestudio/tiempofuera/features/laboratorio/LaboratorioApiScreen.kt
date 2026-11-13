@@ -46,6 +46,7 @@ fun LaboratorioApiScreen(alVolver: () -> Unit, viewModel: LaboratorioApiViewMode
     val ocupado by viewModel.ocupado.collectAsStateWithLifecycle()
     var email by rememberSaveable { mutableStateOf("") }
     var codigo by rememberSaveable { mutableStateOf("") }
+    var paquete by rememberSaveable { mutableStateOf("com.google.android.youtube") }
     val colores = OutlinedTextFieldDefaults.colors(
         focusedTextColor = ColoresTF.Blanco, unfocusedTextColor = ColoresTF.Blanco,
         focusedBorderColor = ColoresTF.Amarillo, unfocusedBorderColor = ColoresTF.Blanco,
@@ -65,7 +66,7 @@ fun LaboratorioApiScreen(alVolver: () -> Unit, viewModel: LaboratorioApiViewMode
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             BotonRegresar(alVolver)
             Spacer(Modifier.width(12.dp))
-            Text("Laboratorio · M1", style = MaterialTheme.typography.headlineMedium, color = ColoresTF.Blanco)
+            Text("Laboratorio", style = MaterialTheme.typography.headlineMedium, color = ColoresTF.Blanco)
         }
         Text(viewModel.urlApi, style = MaterialTheme.typography.bodySmall, color = ColoresTF.Blanco)
         if (ocupado) LinearProgressIndicator(Modifier.fillMaxWidth(), color = ColoresTF.Amarillo)
@@ -96,6 +97,18 @@ fun LaboratorioApiScreen(alVolver: () -> Unit, viewModel: LaboratorioApiViewMode
         BotonL(ColoresTF.Morado, "Leer mi perfil (/me)", alTocar = viewModel::leerPerfil, habilitado = !ocupado && s != null)
         BotonL(ColoresTF.Naranja, "Caducar token", alTocar = viewModel::caducarToken, habilitado = !ocupado && s != null)
         BotonL(ColoresTF.Rojo, "Cerrar sesión", alTocar = viewModel::salir, habilitado = !ocupado && s != null)
+
+        Text("Bloqueo · M3", style = MaterialTheme.typography.headlineMedium, color = ColoresTF.Blanco)
+        OutlinedTextField(
+            paquete, { paquete = it.trim() }, label = { Text("Paquete de la app") }, singleLine = true, colors = colores,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        BotonL(ColoresTF.Celeste, "Revisar permisos", alTocar = viewModel::revisarPermisos)
+        BotonL(ColoresTF.Morado, "Abrir Accesibilidad", alTocar = viewModel::abrirAccesibilidad)
+        BotonL(ColoresTF.Morado, "Abrir Acceso al uso", alTocar = viewModel::abrirAccesoAlUso)
+        BotonL(ColoresTF.Amarillo, "Misión: bloquear 2 min", alTocar = { viewModel.bloquearPorMision(paquete, 2) }, habilitado = !ocupado)
+        BotonL(ColoresTF.Naranja, "Límite diario de 1 min", alTocar = { viewModel.ponerLimite(paquete, 1) }, habilitado = !ocupado)
+        BotonL(ColoresTF.Verde, "Quitar bloqueos", alTocar = viewModel::quitarBloqueos, habilitado = !ocupado)
 
         bitacora.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = ColoresTF.Blanco, modifier = Modifier.fillMaxWidth()) }
     }

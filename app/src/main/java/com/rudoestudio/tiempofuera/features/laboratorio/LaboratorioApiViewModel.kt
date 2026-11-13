@@ -1,5 +1,6 @@
 package com.rudoestudio.tiempofuera.features.laboratorio
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rudoestudio.tiempofuera.BuildConfig
@@ -9,6 +10,16 @@ import com.rudoestudio.tiempofuera.domain.auth.EnviarCodigoVerificacionUseCase
 import com.rudoestudio.tiempofuera.domain.auth.SesionStore
 import com.rudoestudio.tiempofuera.domain.auth.SesionUsuario
 import com.rudoestudio.tiempofuera.domain.auth.VerificarCodigoUseCase
+import com.rudoestudio.tiempofuera.domain.bloqueo.DetenerBloqueoAppsUseCase
+import com.rudoestudio.tiempofuera.domain.bloqueo.GuardarSeleccionAppsUseCase
+import com.rudoestudio.tiempofuera.domain.bloqueo.IniciarBloqueoAppsUseCase
+import com.rudoestudio.tiempofuera.domain.bloqueo.UsoApps
+import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionGrupoApps
+import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionGrupoAppsRepository
+import com.rudoestudio.tiempofuera.domain.configuracion.TipoGrupoApps
+import com.rudoestudio.tiempofuera.servicios.bloqueo.PermisosBloqueo
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.Duration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,9 +30,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Herramienta de desarrollo para probar M1 contra el API real (staging). Usa
- * [ApiTiempoFuera] directo para `/health` y `/me`, saltándose el dominio: no copiar
- * este patrón en pantallas de la app.
+ * Herramienta de desarrollo para probar M1 contra el API real (staging) y el bloqueo de
+ * M3 en el teléfono. Usa [ApiTiempoFuera] directo para `/health` y `/me`, saltándose el
+ * dominio: no copiar este patrón en pantallas de la app.
  */
 @HiltViewModel
 class LaboratorioApiViewModel @Inject constructor(
@@ -30,6 +41,12 @@ class LaboratorioApiViewModel @Inject constructor(
     private val cerrarSesion: CerrarSesionUseCase,
     private val sesionStore: SesionStore,
     private val api: ApiTiempoFuera,
+    @ApplicationContext private val contexto: Context,
+    private val guardarSeleccion: GuardarSeleccionAppsUseCase,
+    private val iniciarBloqueo: IniciarBloqueoAppsUseCase,
+    private val detenerBloqueo: DetenerBloqueoAppsUseCase,
+    private val configuraciones: ConfiguracionGrupoAppsRepository,
+    private val uso: UsoApps,
 ) : ViewModel() {
 
     val urlApi: String = BuildConfig.API_URL
@@ -70,6 +87,37 @@ class LaboratorioApiViewModel @Inject constructor(
         sesionStore.guardar(s.copy(creadaEnMs = 0))
         "Caducado: la próxima llamada a /me debe renovarlo"
     }
+
+    // region Bloqueo (M3): todo sobre el grupo de distracción
+
+    fun revisarPermisos() = ejecutar("Permisos del bloqueo") {
+        "accesibilidad=${PermisosBloqueo.accesibilidadActiva(contexto)} accesoAlUso=${PermisosBloqueo.accesoAlUso(contexto)}"
+    }
+
+    fun abrirAccesibilidad() = PermisosBloqueo.abrirAccesibilidad(contexto)
+
+    fun abrirAccesoAlUso() = PermisosBloqueo.abrirAccesoAlUso(contexto)
+
+    fun bloquearPorMision(paquete: String, minutos: Long) = ejecutar("Misión: bloquear $paquete $minutos min") {
+        guardarSeleccion(TipoGrupoApps.DISTRACCION, setOf(paquete))
+        iniciarBloqueo(TipoGrupoApps.DISTRACCION, Duration.ofMinutes(minutos))
+        "Listo: ábrela para ver la pantalla de bloqueo"
+    }
+
+    fun ponerLimite(paquete: String, minutos: Long) = ejecutar("Límite de $minutos min a $paquete") {
+        guardarSeleccion(TipoGrupoApps.DISTRACCION, setOf(paquete))
+        configuraciones.guardar(ConfiguracionGrupoApps(TipoGrupoApps.DISTRACCION, tiempoMaximoDiario = minutos * 60), TipoGrupoApps.DISTRACCION.clave)
+        val usado = uso.usoDeHoy()[paquete]?.toMinutes() ?: 0
+        "Llevas $usado min hoy en esa app"
+    }
+
+    fun quitarBloqueos() = ejecutar("Quitar bloqueos") {
+        detenerBloqueo(TipoGrupoApps.DISTRACCION)
+        configuraciones.eliminar(TipoGrupoApps.DISTRACCION.clave)
+        "Sin misión ni límite en distracción"
+    }
+
+    // endregion
 
     fun salir() = ejecutar("Cerrar sesión") {
         cerrarSesion()

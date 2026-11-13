@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  canRetrieveWindowContent + flagRetrieveInteractiveWindows hacen falta para getWindows():
+  saber qué apps se ven y dónde (pantalla dividida, ventana flotante, capturas). No se lee
+  el contenido de ninguna app. Es lo que se le declara a Google Play (ver M3.14).
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowsChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagRetrieveInteractiveWindows"
+    android:canRetrieveWindowContent="true"
+    android:description="@string/servicio_bloqueo_descripcion"
+    android:notificationTimeout="100" />

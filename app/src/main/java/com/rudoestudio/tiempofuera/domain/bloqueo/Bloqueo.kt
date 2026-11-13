@@ -177,6 +177,25 @@ data class RegistroTiempoBloqueado(
         return copy(fuentesActivas = restantes, inicioActivo = null, periodosPorDia = agregarPeriodo(inicio, fecha, zona))
     }
 
+    /**
+     * Deja activos exactamente los motivos de [grupos] (grupo → motivo): termina los que ya
+     * no están y empieza los nuevos. Así el registro se corrige solo aunque el servicio
+     * haya estado muerto un rato.
+     */
+    fun sincronizar(grupos: Map<String, MotivoBloqueo>, fecha: Instant, zona: ZoneId): RegistroTiempoBloqueado {
+        val activas = grupos.map { (grupo, motivo) -> "$grupo.${motivo.clave}" }.toSet()
+        var registro = this
+        (fuentesActivas - activas).forEach { nombre ->
+            val (grupo, fuente) = nombre.split('.', limit = 2)
+            registro = registro.finalizar(grupo, fuente, fecha, zona)
+        }
+        (activas - fuentesActivas).forEach { nombre ->
+            val (grupo, fuente) = nombre.split('.', limit = 2)
+            registro = registro.iniciar(grupo, fuente, fecha)
+        }
+        return registro
+    }
+
     /** Segundos bloqueados en el día de [fecha], contando un bloqueo que siga activo y sin los [excluidos]. */
     fun segundosBloqueados(fecha: Instant, zona: ZoneId, excluidos: List<PeriodoBloqueo> = emptyList()): Long {
         val dia = fecha.atZone(zona).toLocalDate()

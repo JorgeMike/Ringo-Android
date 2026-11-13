@@ -11,6 +11,15 @@
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
 
+    <!-- Nombres e íconos de las apps con ícono en el launcher, sin pedir QUERY_ALL_PACKAGES
+         (que Play revisa aparte). Basta para el selector de apps (M3.2). -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
     <application
         android:name=".TiempoFueraApp"
         android:allowBackup="false"
@@ -50,5 +59,18 @@
                 <data android:scheme="ringo" android:host="id-mision" />
             </intent-filter>
         </activity>
+        <!-- Bloqueo de apps (M3.5). -->
+        <service
+            android:name=".servicios.bloqueo.ServicioBloqueo"
+            android:exported="true"
+            android:label="@string/servicio_bloqueo_nombre"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/servicio_bloqueo" />
+        </service>
     </application>
 </manifest>

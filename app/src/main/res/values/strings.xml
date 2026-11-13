@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Tiempo Fuera</string>
+    <!-- Lo que Android muestra al activar el servicio en Ajustes → Accesibilidad. -->
+    <string name="servicio_bloqueo_nombre">Bloqueo de Tiempo Fuera</string>
+    <string name="servicio_bloqueo_descripcion">Tiempo Fuera usa la accesibilidad para saber qué app tienes abierta y taparla cuando te toca descanso: en una misión, a la hora de dormir o al acabarse tu tiempo del día. No lee lo que escribes ni lo que ves dentro de las apps, y no manda nada de esto a ningún lado.</string>
 </resources>

@@ -242,6 +242,9 @@ class TiempoBloqueadoDataStore @Inject constructor(
     override suspend fun finalizarBloqueo(grupoId: String, motivo: MotivoBloqueo, fecha: Instant) =
         cambiar { it.finalizar(grupoId, motivo.clave, fecha, reloj.zone) }
 
+    override suspend fun sincronizar(grupos: Map<String, MotivoBloqueo>, fecha: Instant) =
+        cambiar { it.sincronizar(grupos, fecha, reloj.zone) }
+
     override suspend fun tiempoBloqueadoHoy(fecha: Instant, excluidos: List<PeriodoBloqueo>): Long =
         (almacen.leer(CLAVE, serializador)?.aDominio() ?: RegistroTiempoBloqueado()).segundosBloqueados(fecha, reloj.zone, excluidos)
 

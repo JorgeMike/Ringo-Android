@@ -76,6 +76,9 @@ interface TiempoBloqueadoRepository {
 
     suspend fun finalizarBloqueo(grupoId: String, motivo: MotivoBloqueo, fecha: Instant)
 
+    /** Deja activos exactamente estos bloqueos (grupo → motivo). Ver [RegistroTiempoBloqueado.sincronizar]. */
+    suspend fun sincronizar(grupos: Map<String, MotivoBloqueo>, fecha: Instant)
+
     /** Segundos con apps bloqueadas en el día de [fecha], sin contar los periodos [excluidos] (p. ej. el sueño). */
     suspend fun tiempoBloqueadoHoy(fecha: Instant, excluidos: List<PeriodoBloqueo> = emptyList()): Long
 }
