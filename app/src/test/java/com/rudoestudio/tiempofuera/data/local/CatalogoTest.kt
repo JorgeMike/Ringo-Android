@@ -1,5 +1,6 @@
 package com.rudoestudio.tiempofuera.data.local
 
+import com.rudoestudio.tiempofuera.core.preview.DatosPreview
 import com.rudoestudio.tiempofuera.data.catalogo.CATALOGO_LIGAS
 import com.rudoestudio.tiempofuera.data.catalogo.CATALOGO_LUCHADORES
 import com.rudoestudio.tiempofuera.data.catalogo.CATALOGO_MISIONES_DIARIAS
@@ -66,6 +67,13 @@ class CatalogoTest {
         val tracking = CATALOGO_MISIONES_LIGA.filter { it.tipoMision == TipoMision.TRACKING }
         assertEquals(2, tracking.size)
         assertTrue(tracking.all { it.identificadorGrupoApps != null })
+    }
+
+    @Test
+    fun `los datos de preview salen del catalogo`() {
+        assertEquals("El Serenísimo", DatosPreview.perfil.luchadorSeleccionado.nombre)
+        assertEquals(4, DatosPreview.ligas.size)
+        assertNotNull(DatosPreview.mision(TipoMision.SECUENCIA))
     }
 
     @Test

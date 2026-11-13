@@ -16,6 +16,7 @@ import com.rudoestudio.tiempofuera.data.perfil.EstadisticasEjercicioDataStore
 import com.rudoestudio.tiempofuera.data.perfil.HistoricoRachaRepositoryRoom
 import com.rudoestudio.tiempofuera.data.perfil.ProgresoDiarioRepositoryRoom
 import com.rudoestudio.tiempofuera.data.perfil.UserProfileRepositoryRoom
+import com.rudoestudio.tiempofuera.data.usuario.UserApiRepositoryImpl
 import com.rudoestudio.tiempofuera.domain.auth.AuthRepository
 import com.rudoestudio.tiempofuera.domain.auth.SesionStore
 import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionGrupoAppsRepository
@@ -32,6 +33,7 @@ import com.rudoestudio.tiempofuera.domain.perfil.EstadisticasEjercicioRepository
 import com.rudoestudio.tiempofuera.domain.perfil.HistoricoRachaRepository
 import com.rudoestudio.tiempofuera.domain.perfil.ProgresoDiarioRepository
 import com.rudoestudio.tiempofuera.domain.perfil.UserProfileRepository
+import com.rudoestudio.tiempofuera.domain.sincronizacion.UserApiRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -86,6 +88,9 @@ abstract class RepositoriosModule {
 
     @Binds
     abstract fun configuracionHabitoSueno(impl: ConfiguracionHabitoSuenoDataStore): ConfiguracionHabitoSuenoRepository
+
+    @Binds
+    abstract fun userApi(impl: UserApiRepositoryImpl): UserApiRepository
 
     @Binds
     abstract fun perfilLocalSeeder(impl: PerfilLocalSeederRoom): PerfilLocalSeeder

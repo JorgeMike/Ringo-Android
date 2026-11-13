@@ -83,6 +83,13 @@ app/src/main/java/com/rudoestudio/tiempofuera/
   producción no está desplegada. El access token se renueva solo (`data/red/RenovacionSesion.kt`):
   ninguna pantalla ni repositorio maneja tokens. El logging HTTP es `BASIC` y solo en
   debug: nunca subirlo a `HEADERS`/`BODY` (escribiría tokens en logcat).
+- **Sincronización:** `SincronizacionWorker` (WorkManager, `data/sincronizacion`) sube el
+  progreso cada 12 h y con `ProgramadorSincronizacion.sincronizarAhora()`. Sobrescribe la
+  nube con lo local: por eso solo corre con sesión y onboarding terminado. Los workers
+  usan `@HiltWorker`; WorkManager se inicia en `TiempoFueraApp` (el manifest apaga su
+  arranque automático).
+- **Previews:** usar `core/preview/DatosPreview` (sale del catálogo real), no inventar
+  luchadores o misiones a mano.
 - **Errores del API:** cada repositorio traduce los códigos de *su* endpoint a errores del
   dominio (ver `AuthRepositoryImpl`); el mensaje del API (`{"error": …}`) se respeta.
 - **Laboratorio de API** (Inicio → "Laboratorio de API", `features/laboratorio`):

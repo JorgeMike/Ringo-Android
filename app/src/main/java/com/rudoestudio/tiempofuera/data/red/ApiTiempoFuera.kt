@@ -4,11 +4,13 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 /**
- * Endpoints de tiempo-fuera-api (en iOS: `AuthEndpoint`). Las rutas bajo `/me/` que
- * guardan ligas, luchadores, días, racha y progreso se agregan con M1.5/M2, cuando
- * existan sus entidades. Qué rutas llevan token lo decide [InterceptorAuth].
+ * Endpoints de tiempo-fuera-api (en iOS: `AuthEndpoint`). Qué rutas llevan token lo decide
+ * [InterceptorAuth]. `PUT /me/ligas`, `/me/dias/{dia}` y `/me/racha/{fecha}` no están:
+ * iOS no los usa (las ligas viajan en la sincronización).
  */
 interface ApiTiempoFuera {
     @GET("health")
@@ -28,6 +30,15 @@ interface ApiTiempoFuera {
 
     @PATCH("me")
     suspend fun actualizarPerfil(@Body cuerpo: PerfilRequestDto): PerfilDto
+
+    @PUT("me/luchadores/{luchadorId}")
+    suspend fun actualizarLuchador(@Path("luchadorId") luchadorId: Int, @Body cuerpo: LuchadorRequestDto): LuchadorResponseDto
+
+    @PATCH("me/progreso")
+    suspend fun guardarProgreso(@Body cuerpo: ProgresoUsuarioDto): ProgresoUsuarioDto
+
+    @PUT("me/sincronizacion")
+    suspend fun sincronizar(@Body cuerpo: SincronizacionDto): SincronizacionResponseDto
 }
 
 /** Rutas que no llevan `Authorization` (el resto sí). */

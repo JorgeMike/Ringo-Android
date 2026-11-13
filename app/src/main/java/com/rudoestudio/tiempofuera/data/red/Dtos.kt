@@ -45,7 +45,7 @@ data class SesionDto(
     )
 }
 
-/** `GET /me`. Se mapea al `UserProfile` del dominio en M2. */
+/** `GET /me`. Se mapea a `PerfilOnboardingExistente` en `UserApiRepositoryImpl`. */
 @Serializable
 data class PerfilCompletoDto(
     val id: String,
@@ -116,4 +116,64 @@ data class PerfilDto(
     val horaInicioDia: Int? = null,
     val horaFinDia: Int? = null,
     val colchonUso: Int? = null,
+)
+
+/** `PUT /me/luchadores/{id}`. `cantidad` y `rareza` se mandan siempre (en el API son opcionales). */
+@Serializable
+data class LuchadorRequestDto(
+    val nivel: Int,
+    val puntosPoder: Int,
+    val skinEquipada: String,
+    val cantidad: Int,
+    val rareza: String,
+)
+
+/** Respuesta de `PUT /me/luchadores/{id}` y cada luchador de `PUT /me/sincronizacion`. */
+@Serializable
+data class LuchadorResponseDto(
+    val luchadorId: Int,
+    val nivel: Int,
+    val puntosPoder: Int,
+    val skinEquipada: String,
+    val cantidad: Int,
+    val rareza: String,
+    val desbloqueadoEn: String,
+)
+
+/** Un luchador dentro de `PUT /me/sincronizacion`. */
+@Serializable
+data class LuchadorDeSincronizacionDto(
+    val luchadorId: Int,
+    val nivel: Int,
+    val puntosPoder: Int,
+    val skinEquipada: String,
+    val cantidad: Int,
+    val rareza: String,
+)
+
+/** `PATCH /me/progreso` y el bloque `progreso` de la sincronización. `lastActivityDate` es un instante ISO 8601. */
+@Serializable
+data class ProgresoUsuarioDto(
+    val luchadorId: Int? = null,
+    val puntosPoder: Int,
+    val monedas: Int,
+    val diasRacha: Int,
+    val protectoresRacha: Int,
+    val lastActivityDate: String? = null,
+)
+
+/** `PUT /me/sincronizacion`. Cada bloque es opcional: el API escribe solo lo que viene. */
+@Serializable
+data class SincronizacionDto(
+    val ligas: List<ProgresoDeLigaDto>? = null,
+    val luchadores: List<LuchadorDeSincronizacionDto>? = null,
+    val progreso: ProgresoUsuarioDto? = null,
+)
+
+/** Respuesta de `PUT /me/sincronizacion`: solo trae los bloques que se mandaron. */
+@Serializable
+data class SincronizacionResponseDto(
+    val ligas: List<ProgresoDeLigaDto>? = null,
+    val luchadores: List<LuchadorResponseDto>? = null,
+    val progreso: ProgresoUsuarioDto? = null,
 )
