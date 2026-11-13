@@ -13,10 +13,12 @@ fun HomeScreen(
     alAbrirLiga: (ligaId: String) -> Unit,
     alAbrirTiendaMonedas: () -> Unit,
     alAbrirPerfil: () -> Unit,
+    alAbrirGaleria: () -> Unit,
 ) {
     PantallaPendiente(titulo = "Inicio", tarea = "M5.1") {
         Button(onClick = { alAbrirLiga("liga-de-prueba") }) { Text("Ver una liga") }
         Button(onClick = alAbrirTiendaMonedas) { Text("Tienda de monedas") }
         OutlinedButton(onClick = alAbrirPerfil) { Text("Mi perfil", color = ColoresTF.Blanco) }
+        OutlinedButton(onClick = alAbrirGaleria) { Text("Galería de componentes", color = ColoresTF.Blanco) }
     }
 }

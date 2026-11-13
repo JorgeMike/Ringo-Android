@@ -28,3 +28,7 @@ data class LigaNiveles(val ligaId: String)
 /** `HeaderDestination.tiendaMonedas`: pantalla completa, sin barra de tabs. */
 @Serializable
 data object TiendaMonedas
+
+/** Galería de componentes (herramienta de desarrollo, no existe en iOS). */
+@Serializable
+data object Galeria

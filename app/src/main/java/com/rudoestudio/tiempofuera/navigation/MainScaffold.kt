@@ -34,6 +34,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
 import com.rudoestudio.tiempofuera.core.logging.AppLogger
+import com.rudoestudio.tiempofuera.features.galeria.GaleriaScreen
 import com.rudoestudio.tiempofuera.features.home.HomeScreen
 import com.rudoestudio.tiempofuera.features.ligas.LigaNivelesScreen
 import com.rudoestudio.tiempofuera.features.luchadores.LuchadoresScreen
@@ -130,6 +131,7 @@ fun MainScaffold(
                     HomeScreen(
                         alAbrirLiga = { ligaId -> navController.navigate(LigaNiveles(ligaId)) },
                         alAbrirTiendaMonedas = { navController.navigate(TiendaMonedas) },
+                        alAbrirGaleria = { navController.navigate(Galeria) },
                         alAbrirPerfil = {
                             navController.navigate(Perfil) {
                                 popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -151,6 +153,9 @@ fun MainScaffold(
             composable<Perfil> { PerfilScreen() }
             composable<TiendaMonedas> {
                 TiendaMonedasScreen(alCerrar = { navController.popBackStack() })
+            }
+            composable<Galeria> {
+                GaleriaScreen(alVolver = { navController.popBackStack() })
             }
         }
     }

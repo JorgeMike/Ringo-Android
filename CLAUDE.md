@@ -30,7 +30,9 @@ tipadas (kotlinx.serialization). Un solo módulo `:app`. Versiones en
 ```
 app/src/main/java/com/rudoestudio/tiempofuera/
 ├── core/designsystem   Tema, colores (ColoresTF = colorsets *-RG de iOS), tipografía
-│                       (Arvo + Pirata One) y componentes compartidos
+│                       (Arvo + Pirata One)
+│   └── componentes     Componentes de `Features/Commons/UIComponents` de iOS
+│                       (BotonL, BotonS, Boton3D, TextoContorno, Titulo, barras…)
 ├── core/logging        AppLogger (= AppLogger.shared de iOS)
 ├── di                  Módulos de Hilt (= AppContainer de iOS)
 ├── domain/<área>       Entidades, protocolos (interfaces) y casos de uso. Kotlin puro
@@ -49,6 +51,19 @@ app/src/main/java/com/rudoestudio/tiempofuera/
 - **Al portar algo de iOS**, mencionar en el KDoc el nombre del archivo o tipo de iOS
   (p. ej. "en iOS: `MainTabView`"). Así es fácil comparar las dos versiones.
 - **Pantallas pendientes** usan `PantallaPendiente(titulo, tarea)` con el ID del tablero.
+- **Componentes:** antes de crear uno nuevo, revisar `core/designsystem/componentes` y la
+  **galería** (Inicio → "Galería de componentes", `features/galeria`). Un componente nuevo
+  se agrega también a la galería. La galería es de desarrollo: quitar el acceso antes de
+  publicar.
+- **Formas de iOS** que vienen de SVG (`buildPath(points:)`) se portan con `FormaPoligono`
+  y los mismos puntos y lienzo, para que sean idénticas.
+- **Assets:** no se editan a mano. Vienen de iOS con
+  `python3 scripts/importar_assets_ios.py` (requiere Inkscape), que regenera
+  `res/drawable-nodpi` (PNG), `res/drawable-xxxhdpi` (SVG rasterizados a 4x) y `res/raw`
+  (WAV). Para encontrar el equivalente de `Image("Nombre")` de iOS, ver
+  [`docs/ASSETS.md`](docs/ASSETS.md). El script solo borra y reescribe lo que generó
+  (`scripts/assets_importados.txt`); aun así, un asset que sea solo de Android va en
+  `drawable/` para no mezclarlo ni chocar de nombre con los de iOS.
 - **Paleta:** siempre clara, como en iOS (no hay versión oscura de los colores de marca).
   Para colores de marca usar `ColoresTF`; `MaterialTheme.colorScheme` solo para lo que
   Material ya cubre.

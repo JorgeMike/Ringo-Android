@@ -27,4 +27,24 @@ object ColoresTF {
     val ContornoRojo = Color(0xFF8A0101)
 
     val Blanco = Color(0xFFFFFFFF)
+
+    // Colores que iOS escribe en el código (no son colorsets) y se repiten en componentes.
+
+    /** #001A29: contornos de botones, sombras de títulos, badges del temporizador. */
+    val AzulNoche = Color(0xFF001A29)
+
+    /** #002E49: pista de la barra de nivel del luchador. */
+    val AzulPista = Color(0xFF002E49)
+
+    /** Relleno de botones deshabilitados. */
+    val GrisInactivo = Color(0xFFB5B8BD)
+
+    /** #D9D9D9: sombra del subtítulo en `Titulo`. */
+    val GrisClaro = Color(0xFFD9D9D9)
+
+    /** Fondo por defecto de `TextoEnParalelogramo`. */
+    val AzulParalelogramo = Color(0xFF17385A)
+
+    /** Fondo de `BannerError`. */
+    val RojoError = Color(0xFFCC2E33)
 }
