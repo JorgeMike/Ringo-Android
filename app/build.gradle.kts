@@ -19,6 +19,10 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
+
+        // tiempo-fuera-api. Producción (ringo-api-production) todavía no está desplegada:
+        // cuando lo esté, el buildType release apunta allá.
+        buildConfigField("String", "API_URL", "\"https://ringo-api-staging.ringo-9b3.workers.dev/\"")
     }
 
     buildTypes {
@@ -29,6 +33,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     compileOptions {
@@ -38,6 +43,11 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    testOptions {
+        // AppLogger usa android.util.Log: en tests de JVM regresa valores por defecto.
+        unitTests.isReturnDefaultValues = true
     }
 }
 
@@ -55,10 +65,17 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlinx.serialization)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging) // solo se activa en debug (RedModule)
+    implementation(libs.androidx.datastore.preferences)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
     testImplementation(libs.junit)
+    testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

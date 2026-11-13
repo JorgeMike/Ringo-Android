@@ -3,6 +3,8 @@
 
     <!-- Hápticos (M0.8). Permiso normal: no se le pide al usuario. -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- tiempo-fuera-api (M1). -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".TiempoFueraApp"

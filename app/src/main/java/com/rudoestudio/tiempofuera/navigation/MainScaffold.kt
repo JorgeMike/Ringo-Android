@@ -36,6 +36,7 @@ import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
 import com.rudoestudio.tiempofuera.core.logging.AppLogger
 import com.rudoestudio.tiempofuera.features.galeria.GaleriaScreen
 import com.rudoestudio.tiempofuera.features.home.HomeScreen
+import com.rudoestudio.tiempofuera.features.laboratorio.LaboratorioApiScreen
 import com.rudoestudio.tiempofuera.features.ligas.LigaNivelesScreen
 import com.rudoestudio.tiempofuera.features.luchadores.LuchadoresScreen
 import com.rudoestudio.tiempofuera.features.perfil.PerfilScreen
@@ -132,6 +133,7 @@ fun MainScaffold(
                         alAbrirLiga = { ligaId -> navController.navigate(LigaNiveles(ligaId)) },
                         alAbrirTiendaMonedas = { navController.navigate(TiendaMonedas) },
                         alAbrirGaleria = { navController.navigate(Galeria) },
+                        alAbrirLaboratorio = { navController.navigate(LaboratorioApi) },
                         alAbrirPerfil = {
                             navController.navigate(Perfil) {
                                 popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -156,6 +158,9 @@ fun MainScaffold(
             }
             composable<Galeria> {
                 GaleriaScreen(alVolver = { navController.popBackStack() })
+            }
+            composable<LaboratorioApi> {
+                LaboratorioApiScreen(alVolver = { navController.popBackStack() })
             }
         }
     }

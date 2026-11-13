@@ -69,6 +69,15 @@ app/src/main/java/com/rudoestudio/tiempofuera/
   Material ya cubre.
 - **Deep links:** mismo formato que iOS (`ringo://id-mision/<id>`) para que el API mande
   un solo enlace a ambas plataformas.
+- **API (`../tiempo-fuera-api`):** el contrato está en su `openapi.json`. La URL va en
+  `BuildConfig.API_URL`; hoy las dos compilaciones apuntan a **staging** porque
+  producción no está desplegada. El access token se renueva solo (`data/red/RenovacionSesion.kt`):
+  ninguna pantalla ni repositorio maneja tokens. El logging HTTP es `BASIC` y solo en
+  debug: nunca subirlo a `HEADERS`/`BODY` (escribiría tokens en logcat).
+- **Errores del API:** cada repositorio traduce los códigos de *su* endpoint a errores del
+  dominio (ver `AuthRepositoryImpl`); el mensaje del API (`{"error": …}`) se respeta.
+- **Laboratorio de API** (Inicio → "Laboratorio de API", `features/laboratorio`):
+  herramienta de desarrollo para probar contra staging. Quitar el acceso antes de publicar.
 - **Tono de los textos:** el del estudio (directo, chilango, con humor; ver el
   `CLAUDE.md` de `rudo-studio/`).
 

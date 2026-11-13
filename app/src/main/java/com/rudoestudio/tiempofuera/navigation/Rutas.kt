@@ -32,3 +32,7 @@ data object TiendaMonedas
 /** Galería de componentes (herramienta de desarrollo, no existe en iOS). */
 @Serializable
 data object Galeria
+
+/** Laboratorio para probar el API (herramienta de desarrollo, no existe en iOS). */
+@Serializable
+data object LaboratorioApi
