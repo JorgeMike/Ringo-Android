@@ -18,6 +18,7 @@ import com.rudoestudio.tiempofuera.data.ligas.ProgresoMisionLigaDataStore
 import com.rudoestudio.tiempofuera.data.luchadores.LuchadorRepositoryRoom
 import com.rudoestudio.tiempofuera.data.misiones.MisionRepositoryCatalogo
 import com.rudoestudio.tiempofuera.data.misiones.MisionesDiariasDataStore
+import com.rudoestudio.tiempofuera.data.misiones.SesionMisionDataStore
 import com.rudoestudio.tiempofuera.data.onboarding.EstadoOnboardingDataStore
 import com.rudoestudio.tiempofuera.data.onboarding.PerfilLocalSeederRoom
 import com.rudoestudio.tiempofuera.data.perfil.EstadisticasEjercicioDataStore
@@ -45,6 +46,7 @@ import com.rudoestudio.tiempofuera.domain.ligas.ProgresoMisionLigaRepository
 import com.rudoestudio.tiempofuera.domain.luchadores.LuchadorRepository
 import com.rudoestudio.tiempofuera.domain.misiones.MisionRepository
 import com.rudoestudio.tiempofuera.domain.misiones.MisionesDiariasRepository
+import com.rudoestudio.tiempofuera.domain.misiones.SesionMisionRepository
 import com.rudoestudio.tiempofuera.domain.onboarding.EstadoOnboardingRepository
 import com.rudoestudio.tiempofuera.domain.onboarding.PerfilLocalSeeder
 import com.rudoestudio.tiempofuera.domain.perfil.EstadisticasEjercicioRepository
@@ -78,6 +80,9 @@ abstract class RepositoriosModule {
 
     @Binds
     abstract fun misiones(impl: MisionRepositoryCatalogo): MisionRepository
+
+    @Binds
+    abstract fun sesionMision(impl: SesionMisionDataStore): SesionMisionRepository
 
     @Binds
     abstract fun misionesDiarias(impl: MisionesDiariasDataStore): MisionesDiariasRepository

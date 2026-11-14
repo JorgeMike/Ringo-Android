@@ -78,7 +78,9 @@ import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoConSombra
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoContorno
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.espiral
 import com.rudoestudio.tiempofuera.core.preview.DatosPreview
+import com.rudoestudio.tiempofuera.domain.misiones.Mision
 import com.rudoestudio.tiempofuera.features.estadisticas.duracion
+import com.rudoestudio.tiempofuera.features.misiones.MisionesLista
 import java.time.Duration
 
 /** Las dos secciones de abajo de Inicio. En iOS: `HomeView.SeccionHome`. */
@@ -92,6 +94,7 @@ private enum class SeccionInicio(val titulo: String) { METAS("Metas"), LIGAS("Li
 fun HomeScreen(
     alAbrirEstadisticas: () -> Unit,
     alAbrirRacha: () -> Unit,
+    alAbrirMision: (Mision) -> Unit,
     alAbrirLiga: (ligaId: String) -> Unit,
     alAbrirTiendaMonedas: () -> Unit,
     alAbrirGaleria: () -> Unit,
@@ -104,6 +107,7 @@ fun HomeScreen(
         estado = estado,
         alAbrirEstadisticas = alAbrirEstadisticas,
         alAbrirRacha = alAbrirRacha,
+        metas = { MisionesLista(alAbrirMision) },
         herramientas = if (BuildConfig.DEBUG) {
             { HerramientasDesarrollo(alAbrirLiga, alAbrirTiendaMonedas, alAbrirGaleria, alAbrirLaboratorio) }
         } else {
@@ -117,6 +121,7 @@ private fun ContenidoInicio(
     estado: EstadoInicio,
     alAbrirEstadisticas: () -> Unit,
     alAbrirRacha: () -> Unit,
+    metas: @Composable () -> Unit,
     herramientas: (@Composable () -> Unit)?,
 ) {
     var seccion by rememberSaveable { mutableStateOf(SeccionInicio.METAS) }
@@ -150,8 +155,7 @@ private fun ContenidoInicio(
         SelectorSeccion(seccion, alCambiar = { seccion = it }, Modifier.padding(horizontal = 32.dp, vertical = 10.dp))
         AnimatedContent(seccion, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "seccion") { s ->
             when (s) {
-                // M6.1: aquí va `MisionesListView` (misiones del día y su progreso).
-                SeccionInicio.METAS -> SeccionPendiente("Tus misiones del día llegan muy pronto.", "M6.1")
+                SeccionInicio.METAS -> metas()
                 // M9.1: aquí va `LigasListView`.
                 SeccionInicio.LIGAS -> SeccionPendiente("Las ligas se están armando.", "M9.1")
             }
@@ -317,6 +321,6 @@ private fun HerramientasDesarrollo(
 private fun InicioPreview() = TiempoFueraTheme {
     ContenidoInicio(
         EstadoInicio(DatosPreview.luchadorSeleccionado, 0.4f, 12, TiempoPantallaInicio.Uso(Duration.ofMinutes(95))),
-        {}, {}, herramientas = null,
+        {}, {}, metas = {}, herramientas = null,
     )
 }

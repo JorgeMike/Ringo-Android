@@ -6,6 +6,7 @@ import com.rudoestudio.tiempofuera.domain.configuracion.TipoGrupoApps
 import com.rudoestudio.tiempofuera.domain.ligas.ProgresoMisionDiaria
 import com.rudoestudio.tiempofuera.domain.ligas.ProgresoUsuarioLiga
 import com.rudoestudio.tiempofuera.domain.misiones.DivisionMision
+import com.rudoestudio.tiempofuera.domain.misiones.SesionTiempo
 import com.rudoestudio.tiempofuera.domain.onboarding.PasoOnboarding
 import com.rudoestudio.tiempofuera.domain.onboarding.ProgresoOnboarding
 import com.rudoestudio.tiempofuera.domain.perfil.PropositoUsuario
@@ -155,5 +156,21 @@ data class ProgresoOnboardingGuardado(
                 colchonInicioFin = colchonInicioFin,
             )
         }
+    }
+}
+
+/** En iOS: el estado de la Live Activity del temporizador (`LiveActivityService`). */
+@Serializable
+data class SesionTiempoGuardada(
+    val misionId: Int,
+    val inicioMs: Long,
+    val finMs: Long? = null,
+    val terminada: Boolean = false,
+    val segundosAlTerminar: Int? = null,
+) {
+    fun aDominio() = SesionTiempo(misionId, Instant.ofEpochMilli(inicioMs), finMs?.let(Instant::ofEpochMilli), terminada, segundosAlTerminar)
+
+    companion object {
+        fun de(s: SesionTiempo) = SesionTiempoGuardada(s.misionId, s.inicio.toEpochMilli(), s.fin?.toEpochMilli(), s.terminada, s.segundosAlTerminar)
     }
 }

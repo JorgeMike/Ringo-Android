@@ -53,6 +53,10 @@ data object AvisoAccesibilidad
 @Serializable
 data class SelectorApps(val grupo: String)
 
+/** Una misión a pantalla completa (M6.0). En iOS: `.misionFlow` (`fullScreenCover`). */
+@Serializable
+data class MisionFlujo(val misionId: Int)
+
 /** Días invicto: calendario y récords (M5.2). En iOS: `RachaStatsView`, desde Inicio. */
 @Serializable
 data object RachaStats

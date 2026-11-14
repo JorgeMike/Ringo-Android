@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -40,6 +39,8 @@ import com.rudoestudio.tiempofuera.features.bloqueo.SelectorAppsScreen
 import com.rudoestudio.tiempofuera.features.estadisticas.EstadisticasUsoScreen
 import com.rudoestudio.tiempofuera.features.galeria.GaleriaScreen
 import com.rudoestudio.tiempofuera.features.home.HomeScreen
+import com.rudoestudio.tiempofuera.features.misiones.BannerSesionMision
+import com.rudoestudio.tiempofuera.features.misiones.MisionFlujoScreen
 import com.rudoestudio.tiempofuera.features.home.RachaStatsScreen
 import com.rudoestudio.tiempofuera.features.laboratorio.LaboratorioApiScreen
 import com.rudoestudio.tiempofuera.features.ligas.LigaNivelesScreen
@@ -72,16 +73,13 @@ fun MainScaffold(
     val entrada by navController.currentBackStackEntryAsState()
     val destino = entrada?.destination
     val snackbar = remember { SnackbarHostState() }
-    val alcance = rememberCoroutineScope()
 
-    // Las misiones llegan en M6: por ahora solo confirmamos que el enlace se recibió.
     LaunchedEffect(deepLinkPendiente) {
         val link = deepLinkPendiente ?: return@LaunchedEffect
         when (link) {
             is DeepLink.IdMision -> {
                 AppLogger.info("Deep link: misión ${link.id}")
-                // Fuera de este efecto: alAtenderDeepLink() lo reinicia y cancelaría el aviso.
-                alcance.launch { snackbar.showSnackbar("Abrir misión ${link.id}: llega con M6") }
+                navController.navigate(MisionFlujo(link.id))
             }
         }
         alAtenderDeepLink()
@@ -95,6 +93,10 @@ fun MainScaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         containerColor = ColoresTF.Azul,
         snackbarHost = { SnackbarHost(snackbar) },
+        // En iOS `SesionMisionBannerView` va arriba del `TabView`.
+        topBar = {
+            BannerSesionMision(alAbrir = { navController.navigate(MisionFlujo(it.id)) }, visible = enTab)
+        },
         bottomBar = {
             if (enTab) {
                 NavigationBar(containerColor = ColoresTF.Azul) {
@@ -141,6 +143,7 @@ fun MainScaffold(
                         alAbrirLaboratorio = { navController.navigate(LaboratorioApi) },
                         alAbrirEstadisticas = { navController.navigate(EstadisticasUso) },
                         alAbrirRacha = { navController.navigate(RachaStats) },
+                        alAbrirMision = { navController.navigate(MisionFlujo(it.id)) },
                     )
                 }
                 composable<LigaNiveles> { entradaLiga ->
@@ -175,6 +178,12 @@ fun MainScaffold(
             }
             composable<AvisoAccesibilidad> {
                 AvisoAccesibilidadScreen(alVolver = { navController.popBackStack() })
+            }
+            composable<MisionFlujo> {
+                MisionFlujoScreen(
+                    alCerrar = { navController.popBackStack() },
+                    alElegirApps = { grupo -> navController.navigate(SelectorApps(grupo.clave)) },
+                )
             }
             composable<RachaStats> {
                 RachaStatsScreen(alVolver = { navController.popBackStack() })
