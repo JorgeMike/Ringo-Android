@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -225,7 +226,11 @@ fun EtiquetaHora(
     }
     if (mostrandoSelector) {
         val estado = rememberTimePickerState(hora.hour, hora.minute)
-        ModalBottomSheet(onDismissRequest = { mostrandoSelector = false }) {
+        // Abierta por completo: a media altura el reloj quedaba cortado.
+        ModalBottomSheet(
+            onDismissRequest = { mostrandoSelector = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        ) {
             Column(
                 Modifier.fillMaxWidth().padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),

@@ -331,7 +331,7 @@ fun DivisionesPaso(inicial: Set<DivisionMision>, alContinuar: (Set<DivisionMisio
     var error by remember { mutableStateOf<String?>(null) }
     val faltantes = (ReglasOnboarding.DIVISIONES_REQUERIDAS - seleccion.size).coerceAtLeast(0)
     FondoOnboarding {
-        Column(Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(Modifier.fillMaxSize().padding(16.dp).padding(top = 48.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
             PreguntaDecorada("¿Qué misiones prefieres?", bajarLineas = 20.dp)
             TextoPaso("Elige ${ReglasOnboarding.DIVISIONES_REQUERIDAS} divisiones ($faltantes restantes)")
             Column(

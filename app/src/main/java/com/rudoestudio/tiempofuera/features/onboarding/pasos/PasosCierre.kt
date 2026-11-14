@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -133,10 +134,12 @@ fun FirmaPaso(alContinuar: () -> Unit) {
         }
         val verde = ColorFilter.tint(ColoresTF.Verde)
 
+        // Las estrellas miden más que la pantalla y se desbordan a propósito, como en iOS:
+        // sin `unbounded`, la caja las encogería al tamaño de la pantalla.
         Box(Modifier.fillMaxSize().then(recorteCirculo), contentAlignment = Alignment.Center) {
-            Image(painterResource(R.drawable.estrella_fondo), null, colorFilter = verde)
-            Image(painterResource(R.drawable.estrella2_fondo), null, colorFilter = verde, modifier = Modifier.offset(40.dp, (-50).dp))
-            Image(painterResource(R.drawable.estrella3_fondo), null, colorFilter = verde, modifier = Modifier.offset(30.dp, (-60).dp))
+            Image(painterResource(R.drawable.estrella_fondo), null, colorFilter = verde, modifier = Modifier.wrapContentSize(unbounded = true))
+            Image(painterResource(R.drawable.estrella2_fondo), null, colorFilter = verde, modifier = Modifier.wrapContentSize(unbounded = true).offset(40.dp, (-50).dp))
+            Image(painterResource(R.drawable.estrella3_fondo), null, colorFilter = verde, modifier = Modifier.wrapContentSize(unbounded = true).offset(30.dp, (-60).dp))
             ImagenPixel(R.drawable.i_5_kz, 300.dp, Modifier.offset(y = y.dp))
         }
         ImagenPixel(R.drawable.i_5_kz_hover, 300.dp, Modifier.align(Alignment.Center).offset(y = y.dp))
