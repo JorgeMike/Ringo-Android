@@ -1,5 +1,7 @@
 package com.rudoestudio.tiempofuera.di
 
+import com.rudoestudio.tiempofuera.core.audio.AudioServiceAndroid
+import com.rudoestudio.tiempofuera.domain.servicios.AudioService
 import com.rudoestudio.tiempofuera.core.hapticos.HapticServiceAndroid
 import com.rudoestudio.tiempofuera.core.notificaciones.NotificationServiceAndroid
 import com.rudoestudio.tiempofuera.domain.luchadores.CalculadorDeNivel
@@ -29,6 +31,9 @@ abstract class ServiciosModule {
 
     @Binds
     abstract fun notificaciones(impl: NotificationServiceAndroid): NotificationService
+
+    @Binds
+    abstract fun audio(impl: AudioServiceAndroid): AudioService
 
     companion object {
         /** La hora y el día del teléfono. Los tests pasan un `Clock` fijo. */

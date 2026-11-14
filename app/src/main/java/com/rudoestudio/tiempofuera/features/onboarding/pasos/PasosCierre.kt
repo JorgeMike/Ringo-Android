@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,7 +57,10 @@ import com.rudoestudio.tiempofuera.core.designsystem.componentes.ImagenPixel
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoContorno
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.Titulo
 import com.rudoestudio.tiempofuera.core.hapticos.LocalHaptics
+import com.rudoestudio.tiempofuera.domain.luchadores.Rareza
+import com.rudoestudio.tiempofuera.domain.recompensas.FlujoRecompensa
 import com.rudoestudio.tiempofuera.domain.servicios.HapticService.EstiloImpacto
+import com.rudoestudio.tiempofuera.features.recompensas.RecompensaFlujo
 import com.rudoestudio.tiempofuera.domain.servicios.HapticService.TipoNotificacion
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -162,12 +166,16 @@ fun FirmaPaso(alContinuar: () -> Unit) {
 }
 
 /**
- * Paso 14: "Aquí tienes tu primer sobre". En iOS: `RecompensaOnboardingView`, que abre un
- * sobre común con `.recompensaFlow`. M7: ese flujo no existe todavía en Android, así que
- * por ahora el botón solo avanza (el usuario no recibe su primer luchador).
+ * Paso 14: "Aquí tienes tu primer sobre": abre un sobre común y el luchador que salga se
+ * queda en su colección. En iOS: `RecompensaOnboardingView` con `.recompensaFlow`.
  */
 @Composable
 fun RecompensaPaso(alContinuar: () -> Unit) {
+    var abriendo by rememberSaveable { mutableStateOf(false) }
+    if (abriendo) {
+        RecompensaFlujo(FlujoRecompensa.SobrePersonaje(Rareza.COMUN), alTerminar = alContinuar)
+        return
+    }
     BoxWithConstraints(Modifier.fillMaxSize().background(ColoresTF.Celeste).clipToBounds()) {
         Image(
             painterResource(R.drawable.fondo_estrella), null,
@@ -188,7 +196,7 @@ fun RecompensaPaso(alContinuar: () -> Unit) {
                 alineacion = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 28.dp),
             )
-            BotonL(ColoresTF.Amarillo, "ABRIR SOBRE", alTocar = alContinuar, modifier = Modifier.padding(top = 20.dp))
+            BotonL(ColoresTF.Amarillo, "ABRIR SOBRE", alTocar = { abriendo = true }, modifier = Modifier.padding(top = 20.dp))
         }
     }
 }

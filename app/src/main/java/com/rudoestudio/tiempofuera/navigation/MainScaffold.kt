@@ -3,6 +3,8 @@ package com.rudoestudio.tiempofuera.navigation
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
@@ -39,6 +41,7 @@ import com.rudoestudio.tiempofuera.features.bloqueo.SelectorAppsScreen
 import com.rudoestudio.tiempofuera.features.estadisticas.EstadisticasUsoScreen
 import com.rudoestudio.tiempofuera.features.galeria.GaleriaScreen
 import com.rudoestudio.tiempofuera.features.home.HomeScreen
+import com.rudoestudio.tiempofuera.features.recompensas.RecompensasEncima
 import com.rudoestudio.tiempofuera.features.misiones.BannerSesionMision
 import com.rudoestudio.tiempofuera.features.misiones.MisionFlujoScreen
 import com.rudoestudio.tiempofuera.features.home.RachaStatsScreen
@@ -87,6 +90,7 @@ fun MainScaffold(
 
     val enTab = TabPrincipal.entries.any { tab -> destino?.hierarchy?.any { it.hasRoute(tab.claseRuta) } == true }
 
+    Box(Modifier.fillMaxSize()) {
     Scaffold(
         // Sin márgenes del sistema: cada pantalla pinta su fondo detrás de la barra de
         // estado y se aparta sola (PantallaPendiente usa safeDrawingPadding).
@@ -198,5 +202,8 @@ fun MainScaffold(
                 SelectorAppsScreen(alTerminar = { navController.popBackStack() })
             }
         }
+    }
+        // Celebraciones (racha, misión completada, sobres) encima de todo. En iOS: `.recompensaFlow`.
+        RecompensasEncima()
     }
 }

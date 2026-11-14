@@ -15,6 +15,8 @@ import com.rudoestudio.tiempofuera.domain.misiones.RelojMision
 import com.rudoestudio.tiempofuera.domain.misiones.SesionTiempo
 import com.rudoestudio.tiempofuera.domain.misiones.SesionesMision
 import com.rudoestudio.tiempofuera.domain.perfil.UserProfileRepository
+import com.rudoestudio.tiempofuera.domain.recompensas.FlujoRecompensa
+import com.rudoestudio.tiempofuera.features.recompensas.PresentadorRecompensas
 import com.rudoestudio.tiempofuera.navigation.MisionFlujo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,6 +57,7 @@ class MisionFlujoViewModel @Inject constructor(
     private val sesiones: SesionesMision,
     private val completarMision: CompletarMisionUseCase,
     private val obtenerSeleccion: ObtenerSeleccionAppsUseCase,
+    private val presentador: PresentadorRecompensas,
 ) : ViewModel() {
     private val misionId = estadoGuardado.toRoute<MisionFlujo>().misionId
 
@@ -130,7 +133,10 @@ class MisionFlujoViewModel @Inject constructor(
         if (_estado.value.guardando) return@conMision
         _estado.update { it.copy(guardando = true, error = null) }
         try {
-            completarMision(mision, unidades)
+            val resultado = completarMision(mision, unidades)
+            presentador.presentar(
+                FlujoRecompensa.alCompletarMision(resultado.racha.activada, resultado.racha.diasDeRacha, resultado.recompensaOtorgada),
+            )
             if (_estado.value.sesion != null) sesiones.cerrar()
             _estado.update { it.copy(guardando = false, reclamada = true) }
         } catch (e: Exception) {

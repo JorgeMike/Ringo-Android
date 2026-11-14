@@ -53,6 +53,7 @@ import com.rudoestudio.tiempofuera.core.designsystem.componentes.FondoLuchador
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.HeaderPuntos
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IconoBotonS
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.ImagenPixel
+import com.rudoestudio.tiempofuera.core.designsystem.componentes.TarjetaLuchador
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IndicadorNivelLuchador
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IconoApp
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IndicadorTiempo
@@ -64,6 +65,7 @@ import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoEnParalelo
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.Titulo
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.espiral
 import com.rudoestudio.tiempofuera.core.hapticos.LocalHaptics
+import com.rudoestudio.tiempofuera.core.preview.DatosPreview
 import com.rudoestudio.tiempofuera.core.hapticos.hapticAlTocar
 import com.rudoestudio.tiempofuera.domain.servicios.HapticService.EstiloImpacto
 import com.rudoestudio.tiempofuera.domain.servicios.HapticService.TipoNotificacion
@@ -155,6 +157,10 @@ fun GaleriaScreen(alVolver: () -> Unit) {
                     )
                 }
             }
+        }
+
+        Seccion("Tarjeta de luchador · M7.7") {
+            TarjetaLuchador(DatosPreview.luchadorSeleccionado)
         }
 
         Seccion("Imagen pixel") {
