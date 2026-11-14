@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -84,15 +85,19 @@ internal fun FondoOnboarding(
 /**
  * Imagen pixel art (sin suavizado), con ancho fijo. En iOS: `.interpolation(.none)`. La
  * sombra suave que iOS les pone (`.shadow`) no se porta: en Compose solo sigue formas.
+ *
+ * La proporción va explícita: los sprites miden 32 o 64 px y, con solo el ancho, Compose
+ * deja la altura en esos pixeles y la imagen sale diminuta.
  */
 @Composable
 internal fun ImagenPixel(@DrawableRes imagen: Int, ancho: Dp, modifier: Modifier = Modifier) {
+    val mapa = ImageBitmap.imageResource(imagen)
     Image(
-        ImageBitmap.imageResource(imagen),
+        mapa,
         contentDescription = null,
         contentScale = ContentScale.Fit,
         filterQuality = FilterQuality.None,
-        modifier = modifier.width(ancho),
+        modifier = modifier.width(ancho).aspectRatio(mapa.width.toFloat() / mapa.height),
     )
 }
 
