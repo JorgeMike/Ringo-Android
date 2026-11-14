@@ -81,6 +81,7 @@ import com.rudoestudio.tiempofuera.core.designsystem.componentes.espiral
 import com.rudoestudio.tiempofuera.core.preview.DatosPreview
 import com.rudoestudio.tiempofuera.domain.misiones.Mision
 import com.rudoestudio.tiempofuera.features.estadisticas.duracion
+import com.rudoestudio.tiempofuera.features.ligas.LigasLista
 import com.rudoestudio.tiempofuera.features.misiones.MisionesLista
 import java.time.Duration
 
@@ -96,7 +97,7 @@ fun HomeScreen(
     alAbrirEstadisticas: () -> Unit,
     alAbrirRacha: () -> Unit,
     alAbrirMision: (Mision) -> Unit,
-    alAbrirLiga: (ligaId: String) -> Unit,
+    alAbrirLiga: (ligaId: Int) -> Unit,
     alAbrirTiendaMonedas: () -> Unit,
     alAbrirGaleria: () -> Unit,
     alAbrirLaboratorio: () -> Unit,
@@ -109,8 +110,9 @@ fun HomeScreen(
         alAbrirEstadisticas = alAbrirEstadisticas,
         alAbrirRacha = alAbrirRacha,
         metas = { MisionesLista(alAbrirMision) },
+        ligas = { LigasLista({ alAbrirLiga(it.id) }) },
         herramientas = if (BuildConfig.DEBUG) {
-            { HerramientasDesarrollo(alAbrirLiga, alAbrirTiendaMonedas, alAbrirGaleria, alAbrirLaboratorio) }
+            { HerramientasDesarrollo(alAbrirTiendaMonedas, alAbrirGaleria, alAbrirLaboratorio) }
         } else {
             null
         },
@@ -123,6 +125,7 @@ private fun ContenidoInicio(
     alAbrirEstadisticas: () -> Unit,
     alAbrirRacha: () -> Unit,
     metas: @Composable () -> Unit,
+    ligas: @Composable () -> Unit,
     herramientas: (@Composable () -> Unit)?,
 ) {
     var seccion by rememberSaveable { mutableStateOf(SeccionInicio.METAS) }
@@ -157,8 +160,7 @@ private fun ContenidoInicio(
         AnimatedContent(seccion, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "seccion") { s ->
             when (s) {
                 SeccionInicio.METAS -> metas()
-                // M9.1: aquí va `LigasListView`.
-                SeccionInicio.LIGAS -> SeccionPendiente("Las ligas se están armando.", "M9.1")
+                SeccionInicio.LIGAS -> ligas()
             }
         }
         herramientas?.invoke()
@@ -257,21 +259,9 @@ private fun SelectorSeccion(actual: SeccionInicio, alCambiar: (SeccionInicio) ->
     }
 }
 
-@Composable
-private fun SeccionPendiente(texto: String, tarea: String) {
-    Column(
-        Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(texto, fontFamily = Arvo, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = ColoresTF.Blanco, textAlign = TextAlign.Center)
-        Text("Próximamente · $tarea", fontFamily = Arvo, fontSize = 12.sp, color = ColoresTF.Blanco.copy(alpha = 0.7f))
-    }
-}
-
 /** Accesos a las herramientas de desarrollo. Solo salen en debug: la versión de Play no los trae. */
 @Composable
 private fun HerramientasDesarrollo(
-    alAbrirLiga: (String) -> Unit,
     alAbrirTiendaMonedas: () -> Unit,
     alAbrirGaleria: () -> Unit,
     alAbrirLaboratorio: () -> Unit,
@@ -286,7 +276,6 @@ private fun HerramientasDesarrollo(
             "Laboratorio de API" to alAbrirLaboratorio,
             "Galería de componentes" to alAbrirGaleria,
             "Tienda de monedas" to alAbrirTiendaMonedas,
-            "Ver una liga" to { alAbrirLiga("liga-de-prueba") },
         ).forEach { (texto, accion) ->
             OutlinedButton(onClick = accion) { Text(texto, color = ColoresTF.Blanco) }
         }
@@ -298,6 +287,6 @@ private fun HerramientasDesarrollo(
 private fun InicioPreview() = TiempoFueraTheme {
     ContenidoInicio(
         EstadoInicio(DatosPreview.luchadorSeleccionado, 0.4f, 12, TiempoPantallaInicio.Uso(Duration.ofMinutes(95))),
-        {}, {}, metas = {}, herramientas = null,
+        {}, {}, metas = {}, ligas = {}, herramientas = null,
     )
 }

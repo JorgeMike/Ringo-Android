@@ -66,6 +66,18 @@ object EvaluadorProgresoLiga {
         }
         return if (actualId != progreso.nivelActualId) progreso.copy(nivelActualId = actualId) else null
     }
+
+    /** Los niveles hasta la siguiente barrera sin vencer (en iOS: `LigaNivelesViewModel.nivelesVisibles`). */
+    fun nivelesVisibles(niveles: List<NivelLiga>, progreso: ProgresoUsuarioLiga): List<NivelLiga> {
+        val ordenados = niveles.sortedBy { it.id }
+        val barrera = ordenados.firstOrNull { it.tipo == TipoNivel.BARRERA && it.id !in progreso.nivelesDesbloqueados }
+            ?: return ordenados
+        return ordenados.filter { it.id <= barrera.id }
+    }
+
+    /** Experiencia del siguiente nivel; `null` si ya no hay más. */
+    fun expSiguienteNivel(niveles: List<NivelLiga>, progreso: ProgresoUsuarioLiga): Double? =
+        niveles.filter { it.id > progreso.nivelActualId }.minByOrNull { it.id }?.expRequerida
 }
 
 /**

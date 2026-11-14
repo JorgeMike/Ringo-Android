@@ -32,7 +32,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
 import com.rudoestudio.tiempofuera.core.logging.AppLogger
 import com.rudoestudio.tiempofuera.features.bloqueo.AvisoAccesibilidadScreen
@@ -150,10 +149,10 @@ fun MainScaffold(
                         alAbrirMision = { navController.navigate(MisionFlujo(it.id)) },
                     )
                 }
-                composable<LigaNiveles> { entradaLiga ->
+                composable<LigaNiveles> {
                     LigaNivelesScreen(
-                        ligaId = entradaLiga.toRoute<LigaNiveles>().ligaId,
                         alVolver = { navController.popBackStack() },
+                        alAbrirMision = { navController.navigate(MisionFlujo(it.id)) },
                     )
                 }
             }

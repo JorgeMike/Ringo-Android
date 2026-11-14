@@ -69,4 +69,23 @@ class FlujoRecompensasTest {
         assertEquals(PantallaRecompensa.SubidaNivel(subida, luchador), estado.pantalla)
         assertTrue(estado.continuar().terminado)
     }
+
+    @Test
+    fun `cobrar un nivel festeja la subida y luego abre sus sobres en orden`() {
+        val subida = ResultadoSubidaNivel(luchador.id, 10, 90, 2, 4, Rareza.COMUN, Rareza.COMUN, 0)
+        var estado = EstadoRecompensas.iniciar(
+            FlujoRecompensa.alCobrarNivel(listOf(Rareza.EPICO, Rareza.COMUN), 50, subida, luchador)!!,
+        )
+        assertTrue(estado.pantalla is PantallaRecompensa.SubidaNivel)
+        estado = estado.continuar()
+        assertEquals(PantallaRecompensa.Sobre(Rareza.COMUN), estado.pantalla)
+        estado = estado.sobreRecolectado(luchador, recoleccion(duplicado = false))
+        assertEquals(PantallaRecompensa.Sobre(Rareza.EPICO), estado.pantalla)
+    }
+
+    @Test
+    fun `cobrar un nivel sin sobres ni subida no festeja nada`() {
+        val sinSubir = ResultadoSubidaNivel(luchador.id, 10, 20, 2, 2, Rareza.COMUN, Rareza.COMUN, 0)
+        assertEquals(null, FlujoRecompensa.alCobrarNivel(emptyList(), 3, sinSubir, luchador))
+    }
 }

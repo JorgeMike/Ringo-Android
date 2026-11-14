@@ -21,9 +21,9 @@ data object Tienda
 @Serializable
 data object Perfil
 
-/** `AppRoute.ligaNiveles(Liga)` en iOS. Se pasa el id; la liga se carga en M9. */
+/** `AppRoute.ligaNiveles(Liga)` en iOS: el camino de una liga (M9.2). */
 @Serializable
-data class LigaNiveles(val ligaId: String)
+data class LigaNiveles(val ligaId: Int)
 
 /** `HeaderDestination.tiendaMonedas`: pantalla completa, sin barra de tabs. */
 @Serializable

@@ -22,10 +22,28 @@ sealed interface FlujoRecompensa {
     /** Subida de nivel comprada con puntos de poder (colección de luchadores). */
     data class SubidaNivel(val resultado: ResultadoSubidaNivel, val luchador: Luchador) : FlujoRecompensa
 
+    /**
+     * Se cobró un nivel de liga: primero la subida del luchador (si subió con el poder del
+     * nivel) y luego sus sobres. En iOS: `.subidaNivel(..., recompensaPendiente:)` o
+     * `RecompensaFlowType.paraRecompensa`. M7.3: con varios sobres iOS abre la piñata;
+     * aquí por ahora van uno tras otro.
+     */
+    data class NivelLiga(val sobres: List<Rareza>, val subida: ResultadoSubidaNivel?, val luchador: Luchador) : FlujoRecompensa
+
     companion object {
         /** Al reclamar una misión. En iOS: `MainTabView.onChange(of: misionActiva)`. */
         fun alCompletarMision(rachaActivada: Boolean, diasDeRacha: Int, recompensa: RecompensaMision): FlujoRecompensa =
             if (rachaActivada) RachaActivada(diasDeRacha, recompensa) else MisionCompletada(recompensa)
+
+        /**
+         * Al cobrar un nivel; `null` si no hay nada que festejar. Con un solo sobre su rareza
+         * se sortea por nivel, como iOS (`Rareza.calcularRareza(paraNivel:)`).
+         */
+        fun alCobrarNivel(sobres: List<Rareza>, nivelId: Int, subida: ResultadoSubidaNivel?, luchador: Luchador): FlujoRecompensa? {
+            val rarezas = if (sobres.size == 1) listOf(Rareza.calcularRareza(nivelId)) else sobres.sorted()
+            val subio = subida?.takeIf { it.subioDeNivel }
+            return if (subio == null && rarezas.isEmpty()) null else NivelLiga(rarezas, subio, luchador)
+        }
     }
 }
 
@@ -80,6 +98,11 @@ data class EstadoRecompensas(
             is FlujoRecompensa.RachaActivada -> EstadoRecompensas(PantallaRecompensa.RachaActivada(flujo.diasDeRacha, flujo.recompensaMision))
             is FlujoRecompensa.MisionCompletada -> EstadoRecompensas(PantallaRecompensa.MisionCompletada(flujo.recompensaMision))
             is FlujoRecompensa.SubidaNivel -> EstadoRecompensas(PantallaRecompensa.SubidaNivel(flujo.resultado, flujo.luchador))
+            is FlujoRecompensa.NivelLiga -> when {
+                flujo.subida != null -> EstadoRecompensas(PantallaRecompensa.SubidaNivel(flujo.subida, flujo.luchador), flujo.sobres)
+                flujo.sobres.isNotEmpty() -> EstadoRecompensas(PantallaRecompensa.Sobre(flujo.sobres.first()), flujo.sobres.drop(1))
+                else -> EstadoRecompensas(null)
+            }
         }
     }
 }
