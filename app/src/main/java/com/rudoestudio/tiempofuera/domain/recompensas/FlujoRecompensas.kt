@@ -1,5 +1,6 @@
 package com.rudoestudio.tiempofuera.domain.recompensas
 
+import com.rudoestudio.tiempofuera.domain.ligas.RecompensaNivel
 import com.rudoestudio.tiempofuera.domain.luchadores.Luchador
 import com.rudoestudio.tiempofuera.domain.luchadores.Rareza
 import com.rudoestudio.tiempofuera.domain.luchadores.ResultadoRecoleccion
@@ -7,8 +8,8 @@ import com.rudoestudio.tiempofuera.domain.luchadores.ResultadoSubidaNivel
 import com.rudoestudio.tiempofuera.domain.misiones.RecompensaMision
 
 /**
- * Lo que dispara una celebración. En iOS: `RecompensaFlowType`. Faltan `piñata` y
- * `luchaGanada`, que solo salen al ganar en ligas (M7.3 y M7.6, con M9).
+ * Lo que dispara una celebración. En iOS: `RecompensaFlowType`. La piñata y la lucha
+ * ganada no se piden solas: salen dentro de [NivelLiga].
  */
 sealed interface FlujoRecompensa {
     /** Abrir un sobre (tienda, onboarding). */
@@ -23,12 +24,17 @@ sealed interface FlujoRecompensa {
     data class SubidaNivel(val resultado: ResultadoSubidaNivel, val luchador: Luchador) : FlujoRecompensa
 
     /**
-     * Se cobró un nivel de liga: primero la subida del luchador (si subió con el poder del
-     * nivel) y luego sus sobres. En iOS: `.subidaNivel(..., recompensaPendiente:)` o
-     * `RecompensaFlowType.paraRecompensa`. M7.3: con varios sobres iOS abre la piñata;
-     * aquí por ahora van uno tras otro.
+     * Se cobró un nivel de liga: si fue una barrera, primero "¡Lucha ganada!" ([lucha]);
+     * luego la subida del luchador (si subió con el poder del nivel) y al final sus sobres,
+     * con piñata si son varios. En iOS: `.luchaGanada`, `.subidaNivel(..., recompensaPendiente:)`
+     * y `RecompensaFlowType.paraRecompensa`.
      */
-    data class NivelLiga(val sobres: List<Rareza>, val subida: ResultadoSubidaNivel?, val luchador: Luchador) : FlujoRecompensa
+    data class NivelLiga(
+        val sobres: List<Rareza>,
+        val subida: ResultadoSubidaNivel?,
+        val luchador: Luchador,
+        val lucha: PantallaRecompensa.LuchaGanada? = null,
+    ) : FlujoRecompensa
 
     companion object {
         /** Al reclamar una misión. En iOS: `MainTabView.onChange(of: misionActiva)`. */
@@ -39,10 +45,16 @@ sealed interface FlujoRecompensa {
          * Al cobrar un nivel; `null` si no hay nada que festejar. Con un solo sobre su rareza
          * se sortea por nivel, como iOS (`Rareza.calcularRareza(paraNivel:)`).
          */
-        fun alCobrarNivel(sobres: List<Rareza>, nivelId: Int, subida: ResultadoSubidaNivel?, luchador: Luchador): FlujoRecompensa? {
+        fun alCobrarNivel(
+            sobres: List<Rareza>,
+            nivelId: Int,
+            subida: ResultadoSubidaNivel?,
+            luchador: Luchador,
+            lucha: PantallaRecompensa.LuchaGanada? = null,
+        ): FlujoRecompensa? {
             val rarezas = if (sobres.size == 1) listOf(Rareza.calcularRareza(nivelId)) else sobres.sorted()
             val subio = subida?.takeIf { it.subioDeNivel }
-            return if (subio == null && rarezas.isEmpty()) null else NivelLiga(rarezas, subio, luchador)
+            return if (lucha == null && subio == null && rarezas.isEmpty()) null else NivelLiga(rarezas, subio, luchador, lucha)
         }
     }
 }
@@ -57,6 +69,12 @@ sealed interface PantallaRecompensa {
 
     /** Un sobre trajo un luchador repetido y subió de nivel (o de rareza). */
     data class SubidaNivel(val resultado: ResultadoSubidaNivel, val luchador: Luchador?) : PantallaRecompensa
+
+    /** Varios sobres: se rompe la piñata y luego se abren uno por uno. En iOS: `PinataView` (M7.3). */
+    data class Pinata(val rarezas: List<Rareza>) : PantallaRecompensa
+
+    /** Se ganó la pelea de una barrera. En iOS: `LuchaGanadaView` (M7.6). */
+    data class LuchaGanada(val recompensa: RecompensaNivel, val luchador: Luchador, val rival: Luchador?) : PantallaRecompensa
 }
 
 /**
@@ -68,6 +86,8 @@ sealed interface PantallaRecompensa {
 data class EstadoRecompensas(
     val pantalla: PantallaRecompensa?,
     val sobresPendientes: List<Rareza> = emptyList(),
+    /** Lo que va antes de abrir los sobres (subida de nivel, piñata). */
+    val antesDeSobres: List<PantallaRecompensa> = emptyList(),
     val paso: Int = 0,
 ) {
     val terminado: Boolean get() = pantalla == null
@@ -79,16 +99,18 @@ data class EstadoRecompensas(
     fun sobreRecolectado(luchador: Luchador, resultado: ResultadoRecoleccion): EstadoRecompensas =
         if (!resultado.esDuplicado) siguienteSobre() else ir(PantallaRecompensa.SubidaNivel(resultado.comoSubidaNivel(), luchador))
 
-    /** "Continuar" en racha, misión completada o subida de nivel. */
+    /** "Continuar" en racha, misión completada, subida de nivel o lucha ganada; o la piñata ya rota. */
     fun continuar(): EstadoRecompensas = when (val p = pantalla) {
         is PantallaRecompensa.RachaActivada -> ir(PantallaRecompensa.MisionCompletada(p.recompensaMision))
-        is PantallaRecompensa.SubidaNivel -> siguienteSobre()
+        is PantallaRecompensa.SubidaNivel, is PantallaRecompensa.LuchaGanada, is PantallaRecompensa.Pinata -> siguienteSobre()
         is PantallaRecompensa.MisionCompletada, is PantallaRecompensa.Sobre, null -> ir(null)
     }
 
-    private fun siguienteSobre(): EstadoRecompensas =
-        if (sobresPendientes.isEmpty()) ir(null)
-        else copy(sobresPendientes = sobresPendientes.drop(1)).ir(PantallaRecompensa.Sobre(sobresPendientes.first()))
+    private fun siguienteSobre(): EstadoRecompensas = when {
+        antesDeSobres.isNotEmpty() -> copy(antesDeSobres = antesDeSobres.drop(1)).ir(antesDeSobres.first())
+        sobresPendientes.isEmpty() -> ir(null)
+        else -> copy(sobresPendientes = sobresPendientes.drop(1)).ir(PantallaRecompensa.Sobre(sobresPendientes.first()))
+    }
 
     private fun ir(siguiente: PantallaRecompensa?) = copy(pantalla = siguiente, paso = paso + 1)
 
@@ -98,11 +120,16 @@ data class EstadoRecompensas(
             is FlujoRecompensa.RachaActivada -> EstadoRecompensas(PantallaRecompensa.RachaActivada(flujo.diasDeRacha, flujo.recompensaMision))
             is FlujoRecompensa.MisionCompletada -> EstadoRecompensas(PantallaRecompensa.MisionCompletada(flujo.recompensaMision))
             is FlujoRecompensa.SubidaNivel -> EstadoRecompensas(PantallaRecompensa.SubidaNivel(flujo.resultado, flujo.luchador))
-            is FlujoRecompensa.NivelLiga -> when {
-                flujo.subida != null -> EstadoRecompensas(PantallaRecompensa.SubidaNivel(flujo.subida, flujo.luchador), flujo.sobres)
-                flujo.sobres.isNotEmpty() -> EstadoRecompensas(PantallaRecompensa.Sobre(flujo.sobres.first()), flujo.sobres.drop(1))
-                else -> EstadoRecompensas(null)
-            }
+            // Todo lo del nivel va en fila: lucha, subida, piñata y los sobres.
+            is FlujoRecompensa.NivelLiga -> EstadoRecompensas(
+                pantalla = null,
+                sobresPendientes = flujo.sobres,
+                antesDeSobres = listOfNotNull(
+                    flujo.lucha,
+                    flujo.subida?.let { PantallaRecompensa.SubidaNivel(it, flujo.luchador) },
+                    PantallaRecompensa.Pinata(flujo.sobres).takeIf { flujo.sobres.size > 1 },
+                ),
+            ).siguienteSobre().copy(paso = 0)
         }
     }
 }

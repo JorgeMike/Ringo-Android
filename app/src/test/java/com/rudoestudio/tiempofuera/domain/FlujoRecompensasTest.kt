@@ -1,6 +1,7 @@
 package com.rudoestudio.tiempofuera.domain
 
 import com.rudoestudio.tiempofuera.core.preview.DatosPreview
+import com.rudoestudio.tiempofuera.domain.ligas.RecompensaNivel
 import com.rudoestudio.tiempofuera.domain.luchadores.Rareza
 import com.rudoestudio.tiempofuera.domain.luchadores.ResultadoRecoleccion
 import com.rudoestudio.tiempofuera.domain.luchadores.ResultadoSubidaNivel
@@ -71,12 +72,14 @@ class FlujoRecompensasTest {
     }
 
     @Test
-    fun `cobrar un nivel festeja la subida y luego abre sus sobres en orden`() {
+    fun `cobrar un nivel festeja la subida, rompe la pinata y abre sus sobres en orden`() {
         val subida = ResultadoSubidaNivel(luchador.id, 10, 90, 2, 4, Rareza.COMUN, Rareza.COMUN, 0)
         var estado = EstadoRecompensas.iniciar(
             FlujoRecompensa.alCobrarNivel(listOf(Rareza.EPICO, Rareza.COMUN), 50, subida, luchador)!!,
         )
         assertTrue(estado.pantalla is PantallaRecompensa.SubidaNivel)
+        estado = estado.continuar()
+        assertEquals(PantallaRecompensa.Pinata(listOf(Rareza.COMUN, Rareza.EPICO)), estado.pantalla)
         estado = estado.continuar()
         assertEquals(PantallaRecompensa.Sobre(Rareza.COMUN), estado.pantalla)
         estado = estado.sobreRecolectado(luchador, recoleccion(duplicado = false))
@@ -87,5 +90,34 @@ class FlujoRecompensasTest {
     fun `cobrar un nivel sin sobres ni subida no festeja nada`() {
         val sinSubir = ResultadoSubidaNivel(luchador.id, 10, 20, 2, 2, Rareza.COMUN, Rareza.COMUN, 0)
         assertEquals(null, FlujoRecompensa.alCobrarNivel(emptyList(), 3, sinSubir, luchador))
+    }
+
+    @Test
+    fun `un solo sobre no lleva pinata`() {
+        val estado = EstadoRecompensas.iniciar(FlujoRecompensa.alCobrarNivel(listOf(Rareza.EPICO), 3, null, luchador)!!)
+        assertTrue(estado.pantalla is PantallaRecompensa.Sobre)
+        assertTrue(estado.sobresPendientes.isEmpty())
+    }
+
+    @Test
+    fun `ganar una barrera festeja la lucha aunque no traiga nada mas`() {
+        val lucha = PantallaRecompensa.LuchaGanada(RecompensaNivel(puntosPoder = 50, sobres = emptyList()), luchador, null)
+        val estado = EstadoRecompensas.iniciar(FlujoRecompensa.alCobrarNivel(emptyList(), 10, null, luchador, lucha)!!)
+        assertEquals(lucha, estado.pantalla)
+        assertTrue(estado.continuar().terminado)
+    }
+
+    @Test
+    fun `una subida a mitad de los sobres de la barrera no repite la pinata`() {
+        val lucha = PantallaRecompensa.LuchaGanada(RecompensaNivel(sobres = listOf(Rareza.RARO, Rareza.RARO)), luchador, null)
+        var estado = EstadoRecompensas.iniciar(FlujoRecompensa.alCobrarNivel(lucha.recompensa.sobres, 25, null, luchador, lucha)!!)
+        assertEquals(lucha, estado.pantalla)
+        estado = estado.continuar()
+        assertTrue(estado.pantalla is PantallaRecompensa.Pinata)
+        estado = estado.continuar().sobreRecolectado(luchador, recoleccion(duplicado = true))
+        assertTrue(estado.pantalla is PantallaRecompensa.SubidaNivel)
+        estado = estado.continuar()
+        assertEquals(PantallaRecompensa.Sobre(Rareza.RARO), estado.pantalla)
+        assertTrue(estado.sobreConError().terminado)
     }
 }

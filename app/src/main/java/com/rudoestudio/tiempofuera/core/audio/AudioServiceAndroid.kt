@@ -18,7 +18,7 @@ class AudioServiceAndroid @Inject constructor(
     @ApplicationContext contexto: Context,
 ) : AudioService {
     private val pool = SoundPool.Builder()
-        .setMaxStreams(2)
+        .setMaxStreams(4)
         .setAudioAttributes(
             AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_GAME)
@@ -28,9 +28,19 @@ class AudioServiceAndroid @Inject constructor(
         .build()
 
     private val campana = pool.load(contexto, R.raw.campana_ringo, 1)
+    private val golpe = pool.load(contexto, R.raw.foley_combat_stylized_fist_punch_03, 1)
+    private val fallo = pool.load(contexto, R.raw.foley_combat_stylized_fist_punch_08, 1)
 
     override fun reproducirCampanaRingo() {
         // Si todavía no termina de cargar, `play` regresa 0 y no suena: no pasa nada.
         pool.play(campana, 1f, 1f, 1, 0, 1f)
+    }
+
+    override fun reproducirGolpeBarrera() {
+        pool.play(golpe, 1f, 1f, 1, 0, 1f)
+    }
+
+    override fun reproducirFalloBarrera() {
+        pool.play(fallo, 1f, 1f, 1, 0, 1f)
     }
 }

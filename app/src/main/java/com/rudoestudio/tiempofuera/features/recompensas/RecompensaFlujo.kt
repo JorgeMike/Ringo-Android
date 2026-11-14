@@ -95,6 +95,8 @@ fun RecompensaFlujo(flujo: FlujoRecompensa, alTerminar: () -> Unit, viewModel: R
                 is PantallaRecompensa.RachaActivada -> RachaActivadaPantalla(p.diasDeRacha, luchador) { estado = estado.continuar() }
                 is PantallaRecompensa.MisionCompletada -> MisionCompletadaPantalla(p.recompensaMision, luchador, viewModel::campana) { estado = estado.continuar() }
                 is PantallaRecompensa.SubidaNivel -> SubidaNivelPantalla(p.resultado, p.luchador, viewModel) { estado = estado.continuar() }
+                is PantallaRecompensa.Pinata -> PinataPantalla(p.rarezas) { estado = estado.continuar() }
+                is PantallaRecompensa.LuchaGanada -> LuchaGanadaPantalla(p.recompensa, p.luchador, p.rival, viewModel::campana) { estado = estado.continuar() }
                 null -> Unit
             }
         }
@@ -207,7 +209,7 @@ internal fun MisionCompletadaPantalla(recompensa: RecompensaMision, luchador: In
 }
 
 @Composable
-private fun FilaRecompensa(etiqueta: String, icono: Int?, valor: String) {
+internal fun FilaRecompensa(etiqueta: String, icono: Int?, valor: String) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         TextoContorno(etiqueta, arvo(16), ColoresTF.Blanco, Color.Black, 2.dp)
         Row(

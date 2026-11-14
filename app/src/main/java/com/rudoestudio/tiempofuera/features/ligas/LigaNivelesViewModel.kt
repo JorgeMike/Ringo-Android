@@ -7,6 +7,7 @@ import androidx.navigation.toRoute
 import com.rudoestudio.tiempofuera.core.logging.AppLogger
 import com.rudoestudio.tiempofuera.domain.ligas.EvaluadorProgresoLiga
 import com.rudoestudio.tiempofuera.domain.ligas.GuardarProgresoLigaUseCase
+import com.rudoestudio.tiempofuera.domain.ligas.MotorMinijuego
 import com.rudoestudio.tiempofuera.domain.ligas.Liga
 import com.rudoestudio.tiempofuera.domain.ligas.NivelLiga
 import com.rudoestudio.tiempofuera.domain.ligas.ObtenerLigasUseCase
@@ -21,6 +22,8 @@ import com.rudoestudio.tiempofuera.domain.misiones.MisionesEventos
 import com.rudoestudio.tiempofuera.domain.perfil.ProgresoDiarioRepository
 import com.rudoestudio.tiempofuera.domain.perfil.UserProfileRepository
 import com.rudoestudio.tiempofuera.domain.recompensas.FlujoRecompensa
+import com.rudoestudio.tiempofuera.domain.recompensas.PantallaRecompensa
+import com.rudoestudio.tiempofuera.domain.servicios.AudioService
 import com.rudoestudio.tiempofuera.features.recompensas.PresentadorRecompensas
 import com.rudoestudio.tiempofuera.navigation.LigaNiveles
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -81,6 +84,7 @@ class LigaNivelesViewModel @Inject constructor(
     private val perfiles: UserProfileRepository,
     private val progresoDiario: ProgresoDiarioRepository,
     private val presentador: PresentadorRecompensas,
+    private val audio: AudioService,
     eventos: MisionesEventos,
     private val reloj: Clock,
 ) : ViewModel() {
@@ -125,13 +129,21 @@ class LigaNivelesViewModel @Inject constructor(
     }
 
     /** Cobra un nivel y festeja: subida del luchador y sobres. En iOS: `recolectarRecompensa` + `mostrarRecompensaPendiente`. */
-    fun cobrar(nivel: NivelLiga) {
+    fun cobrar(nivel: NivelLiga) = cobrar(nivel, ganoLucha = false)
+
+    /** El rival de una barrera; si no trae, el luchador estrella de la liga (como iOS). */
+    fun rival(nivel: NivelLiga): Luchador? = nivel.luchadorBarrera ?: _estado.value.liga?.luchadorEstrella
+
+    private fun cobrar(nivel: NivelLiga, ganoLucha: Boolean) {
         viewModelScope.launch {
             try {
                 val antes = _estado.value.luchador
                 val subida = recolectarRecompensa(ligaId, nivel)
                 desbloquear(nivel)
-                antes?.let { FlujoRecompensa.alCobrarNivel(nivel.recompensa.sobres, nivel.id, subida, it) }?.let(presentador::presentar)
+                antes?.let {
+                    val lucha = if (ganoLucha) PantallaRecompensa.LuchaGanada(nivel.recompensa, it, rival(nivel)) else null
+                    FlujoRecompensa.alCobrarNivel(nivel.recompensa.sobres, nivel.id, subida, it, lucha)
+                }?.let(presentador::presentar)
             } catch (e: Exception) {
                 AppLogger.error(e, "LigaNivelesViewModel")
                 _estado.update { it.copy(error = "No se pudo cobrar el nivel. Intenta de nuevo.") }
@@ -139,13 +151,15 @@ class LigaNivelesViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Ganó la pelea de la barrera. M9.4/M7.6: en iOS llega aquí desde el minijuego y festeja
-     * con "Lucha ganada"; mientras, se cobra como cualquier nivel.
-     */
+    /** Ganó la pelea de la barrera: se cobra y festeja con "¡Lucha ganada!". En iOS: `completarBarrera`. */
     fun ganarBarrera(nivel: NivelLiga) {
         if (nivel.tipo != TipoNivel.BARRERA) return
-        cobrar(nivel)
+        cobrar(nivel, ganoLucha = true)
+    }
+
+    fun sonar(sonido: MotorMinijuego.Sonido) = when (sonido) {
+        MotorMinijuego.Sonido.GOLPE -> audio.reproducirGolpeBarrera()
+        MotorMinijuego.Sonido.FALLO -> audio.reproducirFalloBarrera()
     }
 
     /** Herramienta de prueba (solo debug), como la `TestingBarView` de iOS. */

@@ -73,7 +73,6 @@ import com.rudoestudio.tiempofuera.R
 import com.rudoestudio.tiempofuera.core.designsystem.Arvo
 import com.rudoestudio.tiempofuera.core.designsystem.AssetsIos
 import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
-import com.rudoestudio.tiempofuera.core.designsystem.PantallaPendiente
 import com.rudoestudio.tiempofuera.core.designsystem.PirataOne
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BarraProgresoParalelogramo
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BotonL
@@ -128,9 +127,18 @@ fun LigaNivelesScreen(
         }
     }
 
-    // M9.4: aquí va el minijuego de la barrera (`MinijuegoBarreraView`).
+    // En iOS: `.fullScreenCover(item: nivelBarreraActivo)` con `MinijuegoBarreraView`.
     barrera?.let { nivel ->
-        PeleaPendiente(alGanar = { viewModel.ganarBarrera(nivel); barrera = null }, alCerrar = { barrera = null })
+        val usuario = estado.luchador
+        val rival = viewModel.rival(nivel)
+        if (usuario != null && rival != null) {
+            MinijuegoBarrera(
+                nivel, usuario, rival,
+                alSonar = viewModel::sonar,
+                alGanar = { viewModel.ganarBarrera(nivel); barrera = null },
+                alCerrar = { barrera = null },
+            )
+        }
     }
 
     estado.error?.let {
@@ -359,17 +367,6 @@ private fun BandejaMisiones(paleta: PaletaLiga, misiones: List<Mision>, alAbrirM
             ) {
                 misiones.forEach { m -> MisionCard(m, completada = m.completada, bloqueada = false, alSeleccionar = { alAbrirMision(m) }) }
             }
-        }
-    }
-}
-
-/** M9.4: mientras llega el minijuego, la pelea se gana con un botón en debug. */
-@Composable
-private fun PeleaPendiente(alGanar: () -> Unit, alCerrar: () -> Unit) {
-    Box(Modifier.fillMaxSize().clickable(enabled = false) {}) {
-        PantallaPendiente(titulo = "¡A pelear!", tarea = "M9.4", fondo = ColoresTF.Rojo) {
-            if (BuildConfig.DEBUG) BotonL(ColoresTF.Amarillo, "GANAR (PRUEBA)", alTocar = alGanar)
-            BotonL(ColoresTF.Celeste, "REGRESAR", alTocar = alCerrar)
         }
     }
 }

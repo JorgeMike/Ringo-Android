@@ -4,13 +4,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -89,21 +91,41 @@ private fun fondo(ligaId: Int) = when (ligaId) {
     else -> R.drawable.liga1_card
 }
 
+/**
+ * Lo que mide la tarjeta tal como la diseñó iOS: el fondo (360 × 128 dp) crecido 1.2 y
+ * corrido 14 dp a la izquierda. En pantallas más angostas se encoge todo parejo.
+ */
+private val AnchoDiseno = 460.dp
+private val AltoDiseno = 154.dp
+
 /** En iOS: `LigaCardView`. */
 @Composable
 private fun TarjetaLiga(liga: Liga, alTocar: () -> Unit) {
-    Box(Modifier.clickable(role = Role.Button, onClick = alTocar), contentAlignment = Alignment.Center) {
-        Image(
-            painterResource(fondo(liga.id)), null,
-            Modifier.wrapContentSize(unbounded = true).offset(x = (-14).dp).graphicsLayer { scaleX = 1.2f; scaleY = 1.2f },
-        )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.width(240.dp).padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                TextoConSombra(liga.nombre, TextStyle(fontFamily = PirataOne, fontSize = 30.sp), colorSombra = Color.Black)
-                TextoContorno(descripcion(liga.id), TextStyle(fontFamily = Arvo, fontWeight = FontWeight.Bold, fontSize = 18.sp), ColoresTF.Blanco, Color.Black, 2.dp)
+    BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        val escala = (maxWidth / AnchoDiseno).coerceAtMost(1f)
+        Box(
+            Modifier
+                .size(AnchoDiseno * escala, AltoDiseno * escala)
+                .clickable(role = Role.Button, onClickLabel = "Abrir ${liga.nombre}", onClick = alTocar),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                Modifier.requiredSize(AnchoDiseno, AltoDiseno).graphicsLayer { scaleX = escala; scaleY = escala },
+                contentAlignment = Alignment.Center,
+            ) {
+                Image(
+                    painterResource(fondo(liga.id)), null,
+                    Modifier.offset(x = (-14).dp).graphicsLayer { scaleX = 1.2f; scaleY = 1.2f },
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.width(240.dp).padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        TextoConSombra(liga.nombre, TextStyle(fontFamily = PirataOne, fontSize = 30.sp), colorSombra = Color.Black)
+                        TextoContorno(descripcion(liga.id), TextStyle(fontFamily = Arvo, fontWeight = FontWeight.Bold, fontSize = 18.sp), ColoresTF.Blanco, Color.Black, 2.dp)
+                    }
+                    val estrella = liga.luchadorEstrella
+                    ImagenPixel(AssetsIos.imagen(estrella.imagen) ?: AssetsIos.imagen(estrella.nombre) ?: R.drawable.ringo, 100.dp, Modifier.rotate(4f))
+                }
             }
-            val estrella = liga.luchadorEstrella
-            ImagenPixel(AssetsIos.imagen(estrella.imagen) ?: AssetsIos.imagen(estrella.nombre) ?: R.drawable.ringo, 100.dp, Modifier.rotate(4f))
         }
     }
 }
