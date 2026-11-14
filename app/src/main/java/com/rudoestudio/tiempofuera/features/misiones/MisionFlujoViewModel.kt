@@ -31,9 +31,9 @@ data class EstadoFlujo(
     /** Imagen del luchador equipado (para el tutorial y las misiones). */
     val luchador: Int? = null,
     val tutorialVisto: Boolean = false,
-    /** La sesión de temporizador, si es de esta misión. */
+    /** La sesión de temporizador o meditación, si es de esta misión. */
     val sesion: SesionTiempo? = null,
-    /** Otra misión de temporizador está corriendo: esta no se puede empezar. */
+    /** Otra misión con reloj está en curso: esta no se puede empezar. */
     val otraEnCurso: Boolean = false,
     val hayAppsDistraccion: Boolean = true,
     val guardando: Boolean = false,
@@ -101,6 +101,17 @@ class MisionFlujoViewModel @Inject constructor(
 
     fun rendirse() = conMision { sesiones.rendirse(it) }
 
+    /** Meditación: pausar suelta las apps; reanudar las vuelve a bloquear. */
+    fun pausar() = conMision { sesiones.pausar(it) }
+
+    fun reanudar() = conMision { mision ->
+        try {
+            sesiones.reanudar(mision)
+        } catch (e: ErrorBloqueo) {
+            _estado.update { it.copy(error = "No se pudieron bloquear tus apps: ${e.message}") }
+        }
+    }
+
     /** Modo abierto: "terminar y reclamar". El tiempo fijo se termina solo con [revisarFin]. */
     fun terminarTiempo() = conMision { sesiones.terminar(it) }
 
@@ -109,7 +120,7 @@ class MisionFlujoViewModel @Inject constructor(
         val e = _estado.value
         val mision = e.mision ?: return
         val sesion = e.sesion ?: return
-        if (!sesion.terminada && !RelojMision.esModoAbierto(mision) && RelojMision.seAcabo(mision, sesion, ahora)) {
+        if (!sesion.terminada && RelojMision.seAcabo(mision, sesion, ahora)) {
             conMision { sesiones.terminar(it) }
         }
     }

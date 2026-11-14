@@ -159,7 +159,7 @@ data class ProgresoOnboardingGuardado(
     }
 }
 
-/** En iOS: el estado de la Live Activity del temporizador (`LiveActivityService`). */
+/** En iOS: el estado de la Live Activity del temporizador o la meditación (`LiveActivityService`). */
 @Serializable
 data class SesionTiempoGuardada(
     val misionId: Int,
@@ -167,10 +167,19 @@ data class SesionTiempoGuardada(
     val finMs: Long? = null,
     val terminada: Boolean = false,
     val segundosAlTerminar: Int? = null,
+    val pausada: Boolean = false,
+    val segundosPrevios: Int = 0,
+    val restanteAlPausar: Int? = null,
 ) {
-    fun aDominio() = SesionTiempo(misionId, Instant.ofEpochMilli(inicioMs), finMs?.let(Instant::ofEpochMilli), terminada, segundosAlTerminar)
+    fun aDominio() = SesionTiempo(
+        misionId, Instant.ofEpochMilli(inicioMs), finMs?.let(Instant::ofEpochMilli), terminada, segundosAlTerminar,
+        pausada, segundosPrevios, restanteAlPausar,
+    )
 
     companion object {
-        fun de(s: SesionTiempo) = SesionTiempoGuardada(s.misionId, s.inicio.toEpochMilli(), s.fin?.toEpochMilli(), s.terminada, s.segundosAlTerminar)
+        fun de(s: SesionTiempo) = SesionTiempoGuardada(
+            s.misionId, s.inicio.toEpochMilli(), s.fin?.toEpochMilli(), s.terminada, s.segundosAlTerminar,
+            s.pausada, s.segundosPrevios, s.restanteAlPausar,
+        )
     }
 }

@@ -84,17 +84,9 @@ internal fun TiempoMision(mision: Mision, estado: EstadoFlujo, viewModel: Mision
         return
     }
 
-    // El reloj se recalcula de las fechas cada segundo: si la app estuvo cerrada, ya cuadra.
-    var ahora by remember { mutableStateOf(Instant.now()) }
-    LaunchedEffect(sesion) {
-        while (true) {
-            ahora = Instant.now()
-            viewModel.revisarFin(ahora)
-            delay(1_000)
-        }
-    }
+    val ahora = rememberAhora(sesion, viewModel::revisarFin)
     val abierto = RelojMision.esModoAbierto(mision)
-    val corriendo = sesion != null && !sesion.terminada && !RelojMision.seAcabo(mision, sesion, ahora)
+    val corriendo = RelojMision.corriendo(mision, sesion, ahora)
     val terminada = sesion != null && RelojMision.seAcabo(mision, sesion, ahora)
     val segundos = RelojMision.segundosEnPantalla(mision, sesion, ahora)
     val vueltas = if (abierto && sesion != null) RelojMision.vueltas(mision, RelojMision.transcurrido(sesion, ahora)) else 0
@@ -121,27 +113,9 @@ internal fun TiempoMision(mision: Mision, estado: EstadoFlujo, viewModel: Mision
             }
             LuchadorTrotando(estado.luchador ?: R.drawable.ringo, corriendo)
             GotasDeSudor(corriendo)
-            if (abierto) {
-                Column(
-                    Modifier.align(Alignment.TopEnd).offset(32.dp, (-20).dp).graphicsLayer {
-                        scaleX = 0.75f; scaleY = 0.75f; transformOrigin = TransformOrigin(1f, 0f)
-                    },
-                    horizontalAlignment = Alignment.End,
-                ) {
-                    val r = mision.recompensa.multiplicada(vueltas)
-                    TextoContorno("x$vueltas", pirata(32), ColoresTF.Amarillo, ColoresTF.Negro, 2.dp, Modifier.rotate(-4f))
-                    SeccionRecompensas(r.puntosPoder, r.monedas, r.exp)
-                }
-            }
+            if (abierto) RecompensaVueltas(mision, vueltas, Modifier.align(Alignment.TopEnd))
         }
-        Row(
-            Modifier.offset(y = (-32).dp).semantics(mergeDescendants = true) { contentDescription = "Tiempo: ${RelojMision.formato(segundos)}" },
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            LineaDecorativa(espejada = false)
-            TemporizadorBadges(RelojMision.formato(segundos))
-            LineaDecorativa(espejada = true)
-        }
+        RelojEnBadges(segundos, Modifier.offset(y = (-32).dp))
         Spacer(Modifier.weight(1f))
         when {
             terminada -> BotonL(
@@ -167,6 +141,51 @@ internal fun TiempoMision(mision: Mision, estado: EstadoFlujo, viewModel: Mision
                 modifier = Modifier.padding(top = 8.dp, start = 32.dp, end = 32.dp),
             )
         }
+    }
+}
+
+/**
+ * La hora de ahora, cada segundo, mientras la pantalla está abierta. El reloj de la misión
+ * se recalcula de las fechas: si la app estuvo cerrada, ya cuadra. [alTick] revisa si se acabó.
+ */
+@Composable
+internal fun rememberAhora(clave: Any?, alTick: (Instant) -> Unit = {}): Instant {
+    var ahora by remember { mutableStateOf(Instant.now()) }
+    LaunchedEffect(clave) {
+        while (true) {
+            ahora = Instant.now()
+            alTick(ahora)
+            delay(1_000)
+        }
+    }
+    return ahora
+}
+
+/** "x3" y lo ganado en las vueltas del modo abierto, arriba a la derecha del reloj. */
+@Composable
+internal fun RecompensaVueltas(mision: Mision, vueltas: Int, modifier: Modifier) {
+    Column(
+        modifier.offset(32.dp, (-20).dp).graphicsLayer {
+            scaleX = 0.75f; scaleY = 0.75f; transformOrigin = TransformOrigin(1f, 0f)
+        },
+        horizontalAlignment = Alignment.End,
+    ) {
+        val r = mision.recompensa.multiplicada(vueltas)
+        TextoContorno("x$vueltas", pirata(32), ColoresTF.Amarillo, ColoresTF.Negro, 2.dp, Modifier.rotate(-4f))
+        SeccionRecompensas(r.puntosPoder, r.monedas, r.exp)
+    }
+}
+
+/** "05:30" en badges entre dos líneas decorativas. */
+@Composable
+internal fun RelojEnBadges(segundos: Int, modifier: Modifier = Modifier) {
+    Row(
+        modifier.semantics(mergeDescendants = true) { contentDescription = "Tiempo: ${RelojMision.formato(segundos)}" },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        LineaDecorativa(espejada = false)
+        TemporizadorBadges(RelojMision.formato(segundos))
+        LineaDecorativa(espejada = true)
     }
 }
 

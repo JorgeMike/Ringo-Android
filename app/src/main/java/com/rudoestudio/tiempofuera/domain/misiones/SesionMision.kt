@@ -11,22 +11,29 @@ import java.time.Instant
 import javax.inject.Inject
 
 /**
- * Una misión de temporizador en curso. Se guarda en disco: sobrevive a cerrar la app, y el
- * tiempo sale de las fechas, no de un contador. En iOS: el estado de la Live Activity
- * (`LiveActivityService`) más `SesionMisionStore`.
+ * Una misión con reloj en curso: temporizador o meditación. Se guarda en disco: sobrevive a
+ * cerrar la app, y el tiempo sale de las fechas, no de un contador. En iOS: el estado de la
+ * Live Activity (`LiveActivityService`) más `SesionMisionStore`.
  *
- * Hay dos modos: con [fin] la misión dura un tiempo fijo y se completa sola; sin [fin]
- * ("modo abierto") se juntan vueltas de `segundosParaRecompensa` hasta que el usuario
- * decide terminar.
+ * Hay dos modos: con tiempo fijo la misión se completa sola al acabarse; en "modo abierto"
+ * (`segundosParaRecompensa`) se juntan vueltas hasta que el usuario decide terminar. La
+ * meditación además se puede pausar: el tramo corriendo empieza en [inicio] y lo de antes
+ * va en [segundosPrevios] (abierto) o [restanteAlPausar] (fijo).
  */
 data class SesionTiempo(
     val misionId: Int,
     val inicio: Instant,
+    /** Fin del tiempo fijo mientras corre; `null` en modo abierto o en pausa. */
     val fin: Instant?,
     /** Ya se terminó (por tiempo o "terminar y reclamar"): falta reclamar la recompensa. */
     val terminada: Boolean = false,
     /** Segundos acumulados al terminar en modo abierto (el reloj ya no avanza). */
     val segundosAlTerminar: Int? = null,
+    val pausada: Boolean = false,
+    /** Modo abierto: segundos de los tramos anteriores a la última pausa. */
+    val segundosPrevios: Int = 0,
+    /** Tiempo fijo en pausa: lo que faltaba al pausar. */
+    val restanteAlPausar: Int? = null,
 )
 
 interface SesionMisionRepository {
@@ -47,14 +54,18 @@ object RelojMision {
     fun esModoAbierto(mision: Mision): Boolean = mision.configuracion.segundosParaRecompensa != null
 
     fun restante(sesion: SesionTiempo, ahora: Instant): Int {
-        val fin = sesion.fin ?: return 0
         if (sesion.terminada) return 0
+        if (sesion.pausada) return sesion.restanteAlPausar ?: 0
+        val fin = sesion.fin ?: return 0
         val ms = Duration.between(ahora, fin).toMillis()
         return if (ms <= 0) 0 else ((ms + 999) / 1000).toInt() // redondeo hacia arriba, como iOS
     }
 
-    fun transcurrido(sesion: SesionTiempo, ahora: Instant): Int =
-        sesion.segundosAlTerminar ?: Duration.between(sesion.inicio, ahora).seconds.toInt().coerceAtLeast(0)
+    fun transcurrido(sesion: SesionTiempo, ahora: Instant): Int = when {
+        sesion.segundosAlTerminar != null -> sesion.segundosAlTerminar
+        sesion.pausada -> sesion.segundosPrevios
+        else -> sesion.segundosPrevios + Duration.between(sesion.inicio, ahora).seconds.toInt().coerceAtLeast(0)
+    }
 
     /** Vueltas completas en modo abierto. */
     fun vueltas(mision: Mision, segundos: Int): Int {
@@ -87,13 +98,28 @@ object RelojMision {
 
     /** La de tiempo fijo ya se acabó, aunque nadie la haya marcado como terminada. */
     fun seAcabo(mision: Mision, sesion: SesionTiempo, ahora: Instant): Boolean =
-        sesion.terminada || (!esModoAbierto(mision) && restante(sesion, ahora) == 0)
+        sesion.terminada || (!esModoAbierto(mision) && !sesion.pausada && restante(sesion, ahora) == 0)
+
+    /** Corriendo: ni en pausa ni acabada. */
+    fun corriendo(mision: Mision, sesion: SesionTiempo?, ahora: Instant): Boolean =
+        sesion != null && !sesion.pausada && !seAcabo(mision, sesion, ahora)
+
+    /** Lo que dice el aviso de arriba (en iOS: `SesionMisionStore.textoEstado`). */
+    fun textoEstado(mision: Mision, sesion: SesionTiempo, ahora: Instant): String {
+        val tiempo = formato(segundosEnPantalla(mision, sesion, ahora))
+        return when {
+            seAcabo(mision, sesion, ahora) -> "Reclamar recompensa"
+            sesion.pausada -> "En pausa · $tiempo"
+            else -> tiempo
+        }
+    }
 }
 
 /**
- * Empezar, rendirse y terminar una misión de temporizador: bloquea las apps de distracción
- * mientras dura y avisa al acabar. En iOS esto lo hace `TiempoViewModel` directo con los
- * casos de uso de bloqueo y la Live Activity.
+ * Empezar, pausar, rendirse y terminar una misión con reloj (temporizador o meditación):
+ * bloquea las apps de distracción mientras corre y avisa al acabar. En iOS esto lo hacen
+ * `TiempoViewModel` y `MeditacionViewModel` directo con los casos de uso de bloqueo y la
+ * Live Activity.
  */
 class SesionesMision @Inject constructor(
     private val repositorio: SesionMisionRepository,
@@ -107,30 +133,53 @@ class SesionesMision @Inject constructor(
     suspend fun actual(): SesionTiempo? = repositorio.obtener()
 
     /** Lanza la excepción del bloqueo si no se pudo (en iOS: "No se pudo bloquear las apps"). */
-    suspend fun iniciar(mision: Mision) {
+    suspend fun iniciar(mision: Mision) = correr(mision, SesionTiempo(mision.id, reloj.instant(), fin = null))
+
+    /** Solo la meditación: suelta las apps y congela el reloj. */
+    suspend fun pausar(mision: Mision) {
+        val sesion = repositorio.obtener()?.takeIf { it.misionId == mision.id && !it.pausada && !it.terminada } ?: return
         val ahora = reloj.instant()
+        liberar(mision.id)
+        repositorio.guardar(
+            sesion.copy(
+                pausada = true,
+                fin = null,
+                segundosPrevios = RelojMision.transcurrido(sesion, ahora),
+                restanteAlPausar = if (RelojMision.esModoAbierto(mision)) null else RelojMision.restante(sesion, ahora),
+            ),
+        )
+    }
+
+    suspend fun reanudar(mision: Mision) {
+        val sesion = repositorio.obtener()?.takeIf { it.misionId == mision.id && it.pausada } ?: return
+        correr(mision, sesion.copy(inicio = reloj.instant(), pausada = false))
+    }
+
+    /** Bloquea y guarda el tramo que empieza; el fijo dura lo que le queda y avisa al final. */
+    private suspend fun correr(mision: Mision, sesion: SesionTiempo) {
         if (RelojMision.esModoAbierto(mision)) {
             iniciarBloqueo(GRUPO)
-            repositorio.guardar(SesionTiempo(mision.id, ahora, fin = null))
-        } else {
-            val duracion = Duration.ofSeconds(RelojMision.duracion(mision).toLong())
-            val fin = ahora + duracion
-            iniciarBloqueo(GRUPO, duracion)
-            repositorio.guardar(SesionTiempo(mision.id, ahora, fin))
-            notificaciones.programarNotificacion(
-                idNotificacion(mision.id),
-                "¡Sesión completada!",
-                "${mision.titulo}: ya puedes reclamar tu recompensa.",
-                fin,
-            )
+            repositorio.guardar(sesion.copy(fin = null))
+            return
         }
+        val segundos = sesion.restanteAlPausar ?: RelojMision.duracion(mision)
+        val duracion = Duration.ofSeconds(segundos.toLong())
+        val fin = sesion.inicio + duracion
+        iniciarBloqueo(GRUPO, duracion)
+        repositorio.guardar(sesion.copy(fin = fin, restanteAlPausar = null))
+        notificaciones.programarNotificacion(
+            idNotificacion(mision.id),
+            "¡Sesión completada!",
+            "${mision.titulo}: ya puedes reclamar tu recompensa.",
+            fin,
+        )
     }
 
     /** Se acabó el tiempo fijo, o "terminar y reclamar" en modo abierto. */
     suspend fun terminar(mision: Mision) {
         val sesion = repositorio.obtener()?.takeIf { it.misionId == mision.id && !it.terminada } ?: return
         val segundos = RelojMision.transcurrido(sesion, reloj.instant())
-        liberar(mision.id)
+        if (!sesion.pausada) liberar(mision.id)
         repositorio.guardar(
             sesion.copy(terminada = true, segundosAlTerminar = if (RelojMision.esModoAbierto(mision)) segundos else null),
         )
@@ -154,6 +203,6 @@ class SesionesMision @Inject constructor(
         /** En iOS `TiempoViewModel` recibe `.distraccion` por defecto y nadie lo cambia. */
         val GRUPO = TipoGrupoApps.DISTRACCION
 
-        fun idNotificacion(misionId: Int) = "tiempo.mision.$misionId"
+        fun idNotificacion(misionId: Int) = "mision.reloj.$misionId"
     }
 }

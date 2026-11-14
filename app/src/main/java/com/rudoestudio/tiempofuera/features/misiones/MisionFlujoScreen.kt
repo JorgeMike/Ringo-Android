@@ -123,6 +123,9 @@ private fun ContenidoMision(mision: Mision, estado: EstadoFlujo, viewModel: Misi
         when (mision.tipoMision) {
             TipoMision.TIEMPO -> TiempoMision(mision, estado, viewModel, alElegirApps)
             TipoMision.ACCIONES -> AccionesMision(mision, estado.luchador, alReclamar = { viewModel.reclamar() })
+            TipoMision.MEDITACION -> MeditacionMision(mision, estado, viewModel)
+            TipoMision.SECUENCIA -> SecuenciaMision(mision, estado.luchador, alReclamar = { viewModel.reclamar() })
+            TipoMision.ESCENA -> EscenaMision(mision, alReclamar = { viewModel.reclamar() })
             else -> MensajeMision(
                 "Esta misión llega muy pronto",
                 "Todavía la estamos armando para Android (${tareaPendiente(mision.tipoMision)}). Mientras, échale ganas a las demás.",
@@ -133,10 +136,7 @@ private fun ContenidoMision(mision: Mision, estado: EstadoFlujo, viewModel: Misi
 
 /** La tarea del tablero de cada tipo que aún no existe en Android. */
 private fun tareaPendiente(tipo: TipoMision?) = when (tipo) {
-    TipoMision.MEDITACION -> "M6.3"
     TipoMision.LECTURAS -> "M6.5"
-    TipoMision.SECUENCIA -> "M6.6"
-    TipoMision.ESCENA -> "M6.7"
     TipoMision.TOMAR_FOTO -> "M6.8"
     TipoMision.LAGARTIJAS -> "M6.9"
     TipoMision.TRACKING -> "M6.10"

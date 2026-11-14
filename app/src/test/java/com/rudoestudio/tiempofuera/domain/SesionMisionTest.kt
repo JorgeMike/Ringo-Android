@@ -75,6 +75,26 @@ class SesionMisionTest {
         assertTrue("distraccion" !in bloqueos.duraciones)
     }
 
+    @Test
+    fun `pausar suelta las apps y congela el reloj, reanudar sigue donde iba`() = runTest {
+        val repo = RepoFake()
+        val bloqueos = BloqueosFake()
+        fun sesiones(reloj: Clock) =
+            SesionesMision(repo, IniciarBloqueoAppsUseCase(bloqueos), DetenerBloqueoAppsUseCase(bloqueos), NotificacionesFake(), reloj)
+
+        sesiones(reloj()).iniciar(fija)
+        sesiones(Clock.offset(reloj(), Duration.ofSeconds(100))).pausar(fija)
+        val pausada = repo.estado.value!!
+        assertTrue(pausada.pausada)
+        assertEquals(500, RelojMision.restante(pausada, inicio.plusSeconds(9_999)))
+        assertTrue("distraccion" !in bloqueos.duraciones)
+
+        // Reanuda una hora después: le quedan los mismos 500 s.
+        sesiones(Clock.offset(reloj(), Duration.ofSeconds(3_700))).reanudar(fija)
+        assertEquals(Duration.ofSeconds(500), bloqueos.duraciones["distraccion"])
+        assertEquals(inicio.plusSeconds(4_200), repo.estado.value?.fin)
+    }
+
     private class RepoFake : SesionMisionRepository {
         val estado = MutableStateFlow<SesionTiempo?>(null)
         override val sesion = estado

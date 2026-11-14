@@ -61,7 +61,7 @@ class BannerSesionViewModel @Inject constructor(
 }
 
 /**
- * Aviso arriba de las tabs mientras hay una misión de temporizador: muestra el tiempo y
+ * Aviso arriba de las tabs mientras hay una misión con reloj (temporizador o meditación): muestra el tiempo y
  * regresa a la misión al tocarlo (M5.4). En iOS: `SesionMisionBannerView`.
  */
 @Composable
@@ -82,8 +82,7 @@ private fun BannerContenido(enCurso: MisionEnCurso, alAbrir: (Mision) -> Unit) {
         }
     }
     val (mision, sesion) = enCurso
-    val estado = if (RelojMision.seAcabo(mision, sesion, ahora)) "Reclamar recompensa"
-    else RelojMision.formato(RelojMision.segundosEnPantalla(mision, sesion, ahora))
+    val estado = RelojMision.textoEstado(mision, sesion, ahora)
 
     Row(
         Modifier
