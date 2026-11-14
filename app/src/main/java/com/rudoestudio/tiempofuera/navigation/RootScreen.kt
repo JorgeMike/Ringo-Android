@@ -29,7 +29,7 @@ fun RootScreen(
             contentAlignment = Alignment.Center,
         ) { CircularProgressIndicator(color = ColoresTF.Amarillo) }
 
-        EstadoRaiz.Onboarding -> OnboardingScreen(alTerminar = viewModel::terminarOnboarding)
+        EstadoRaiz.Onboarding -> OnboardingScreen()
 
         EstadoRaiz.Principal -> MainScaffold(
             deepLinkPendiente = deepLinkPendiente,

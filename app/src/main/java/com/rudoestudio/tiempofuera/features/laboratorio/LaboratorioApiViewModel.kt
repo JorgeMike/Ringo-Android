@@ -16,6 +16,7 @@ import com.rudoestudio.tiempofuera.domain.bloqueo.UsoApps
 import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionGrupoApps
 import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionGrupoAppsRepository
 import com.rudoestudio.tiempofuera.domain.configuracion.TipoGrupoApps
+import com.rudoestudio.tiempofuera.domain.onboarding.EstadoOnboardingRepository
 import com.rudoestudio.tiempofuera.servicios.bloqueo.PermisosBloqueo
 import java.time.Duration
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,6 +46,7 @@ class LaboratorioApiViewModel @Inject constructor(
     private val detenerBloqueo: DetenerBloqueoAppsUseCase,
     private val configuraciones: ConfiguracionGrupoAppsRepository,
     private val uso: UsoApps,
+    private val estadoOnboarding: EstadoOnboardingRepository,
 ) : ViewModel() {
 
     val urlApi: String = BuildConfig.API_URL
@@ -125,6 +127,12 @@ class LaboratorioApiViewModel @Inject constructor(
     }
 
     // endregion
+
+    /** Al terminar, `RootScreen` cambia solo al onboarding. */
+    fun repetirOnboarding() = ejecutar("Repetir onboarding") {
+        estadoOnboarding.reiniciar()
+        "Onboarding desde el paso 0"
+    }
 
     fun salir() = ejecutar("Cerrar sesión") {
         cerrarSesion()

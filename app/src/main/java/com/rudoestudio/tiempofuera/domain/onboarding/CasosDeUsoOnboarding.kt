@@ -7,8 +7,8 @@ import com.rudoestudio.tiempofuera.domain.sincronizacion.UserApiRepository
 import javax.inject.Inject
 
 // Casos de uso de Domain/UseCases/Onboarding de iOS. `AvanzarPasoOnboarding` y
-// `ObtenerEstadoOnboarding` van con el onboarding (M7): guardan el paso, que todavía no
-// se persiste.
+// `ObtenerEstadoOnboarding` no se portan: el `OnboardingViewModel` guarda el paso con
+// `EstadoOnboardingRepository.guardarProgreso`, junto con el borrador.
 
 /**
  * Manda las respuestas del onboarding al API y las guarda en el perfil local; luego marca
@@ -45,6 +45,7 @@ class FinalizarOnboardingUseCase @Inject constructor(
         )
         perfiles.guardarPerfil(perfil)
         estado.finalizar()
-        // M3: aquí iOS llama a `AsegurarSeguimientoDiarioUseCase` (arranca el seguimiento de apps).
+        // iOS aquí llama a `AsegurarSeguimientoDiarioUseCase`. En Android no hace falta: el
+        // servicio de accesibilidad mide y bloquea solo en cuanto tiene permiso y apps.
     }
 }

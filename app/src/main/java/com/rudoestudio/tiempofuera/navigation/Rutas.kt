@@ -37,6 +37,10 @@ data object Galeria
 @Serializable
 data object LaboratorioApi
 
+/** Los pasos del onboarding (M4), inicio de su navegación propia. En iOS: `OnboardingCoordinatorView`. */
+@Serializable
+data object PasosOnboarding
+
 /** Permisos del bloqueo (M3.1). En iOS es parte del paso 10 del onboarding. */
 @Serializable
 data object PermisosBloqueo

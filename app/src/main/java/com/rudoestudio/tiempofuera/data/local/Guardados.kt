@@ -5,8 +5,14 @@ import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionHabitoSueno
 import com.rudoestudio.tiempofuera.domain.configuracion.TipoGrupoApps
 import com.rudoestudio.tiempofuera.domain.ligas.ProgresoMisionDiaria
 import com.rudoestudio.tiempofuera.domain.ligas.ProgresoUsuarioLiga
+import com.rudoestudio.tiempofuera.domain.misiones.DivisionMision
+import com.rudoestudio.tiempofuera.domain.onboarding.PasoOnboarding
+import com.rudoestudio.tiempofuera.domain.onboarding.ProgresoOnboarding
+import com.rudoestudio.tiempofuera.domain.perfil.PropositoUsuario
 import com.rudoestudio.tiempofuera.domain.perfil.RegistroCarrera
 import com.rudoestudio.tiempofuera.domain.perfil.RegistroLagartijas
+import com.rudoestudio.tiempofuera.domain.perfil.TipoPersonalidad
+import com.rudoestudio.tiempofuera.domain.perfil.UserProfileBorrador
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.LocalDate
@@ -89,5 +95,65 @@ data class RegistroLagartijasGuardado(val id: String, val fechaMs: Long, val can
 
     companion object {
         fun de(r: RegistroLagartijas) = RegistroLagartijasGuardado(r.id.toString(), r.fecha.toEpochMilli(), r.cantidad)
+    }
+}
+
+/**
+ * En iOS: `UserProfileBorrador` en UserDefaults (`onboarding.borrador.v1`) más el paso.
+ * Los enums van por su clave (la del API); una clave que ya no exista toma el valor por
+ * defecto del borrador.
+ */
+@Serializable
+data class ProgresoOnboardingGuardado(
+    val paso: String,
+    val fechaNacimiento: String? = null,
+    val email: String = "",
+    val proposito: String? = null,
+    val personalidad: String? = null,
+    val divisiones: List<String> = emptyList(),
+    val tiempoInicial: Int = 0,
+    val tiempoMaxUso: Int = 0,
+    val intervaloHitoUso: Int = 0,
+    val horaInicioDia: Int = 0,
+    val horaFinDia: Int = 0,
+    val colchonInicioFin: Int = 0,
+) {
+    /** `null` si el paso ya no existe en esta versión. */
+    fun aDominio(): ProgresoOnboarding? {
+        val paso = PasoOnboarding.entries.firstOrNull { it.name == paso } ?: return null
+        val defecto = UserProfileBorrador()
+        val borrador = UserProfileBorrador(
+            fechaNacimiento = fechaNacimiento?.let(LocalDate::parse),
+            email = email,
+            proposito = proposito?.let(PropositoUsuario::desdeClave) ?: defecto.proposito,
+            personalidadId = personalidad?.let(TipoPersonalidad::desdeClave) ?: defecto.personalidadId,
+            divisionesSeleccionadas = divisiones.mapNotNull(DivisionMision::desdeClave).toSet(),
+            tiempoInicial = tiempoInicial,
+            tiempoMaxUso = tiempoMaxUso,
+            intervaloHitoUso = intervaloHitoUso,
+            horaInicioDia = horaInicioDia,
+            horaFinDia = horaFinDia,
+            colchonInicioFin = colchonInicioFin,
+        )
+        return ProgresoOnboarding(paso, borrador)
+    }
+
+    companion object {
+        fun de(p: ProgresoOnboarding) = with(p.borrador) {
+            ProgresoOnboardingGuardado(
+                paso = p.paso.name,
+                fechaNacimiento = fechaNacimiento?.toString(),
+                email = email,
+                proposito = proposito.clave,
+                personalidad = personalidadId.clave,
+                divisiones = divisionesSeleccionadas.map { it.clave },
+                tiempoInicial = tiempoInicial,
+                tiempoMaxUso = tiempoMaxUso,
+                intervaloHitoUso = intervaloHitoUso,
+                horaInicioDia = horaInicioDia,
+                horaFinDia = horaFinDia,
+                colchonInicioFin = colchonInicioFin,
+            )
+        }
     }
 }

@@ -13,6 +13,7 @@ import com.rudoestudio.tiempofuera.domain.ProgresoLigasFake
 import com.rudoestudio.tiempofuera.domain.auth.SesionStore
 import com.rudoestudio.tiempofuera.domain.auth.SesionUsuario
 import com.rudoestudio.tiempofuera.domain.onboarding.EstadoOnboardingRepository
+import com.rudoestudio.tiempofuera.domain.onboarding.ProgresoOnboarding
 import com.rudoestudio.tiempofuera.domain.reloj
 import com.rudoestudio.tiempofuera.domain.sincronizacion.ErrorApi
 import com.rudoestudio.tiempofuera.domain.sincronizacion.ProgresoLocal
@@ -84,5 +85,8 @@ class SincronizacionWorkerTest {
         val estado = MutableStateFlow(finalizadoInicial)
         override val finalizado = estado
         override suspend fun finalizar() { estado.value = true }
+        override suspend fun obtenerProgreso(): ProgresoOnboarding? = null
+        override suspend fun guardarProgreso(progreso: ProgresoOnboarding) = Unit
+        override suspend fun reiniciar() { estado.value = false }
     }
 }

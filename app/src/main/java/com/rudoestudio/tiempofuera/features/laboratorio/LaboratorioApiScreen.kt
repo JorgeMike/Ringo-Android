@@ -102,6 +102,7 @@ fun LaboratorioApiScreen(
         BotonL(ColoresTF.Morado, "Leer mi perfil (/me)", alTocar = viewModel::leerPerfil, habilitado = !ocupado && s != null)
         BotonL(ColoresTF.Naranja, "Caducar token", alTocar = viewModel::caducarToken, habilitado = !ocupado && s != null)
         BotonL(ColoresTF.Rojo, "Cerrar sesión", alTocar = viewModel::salir, habilitado = !ocupado && s != null)
+        BotonL(ColoresTF.Morado, "Repetir onboarding", alTocar = viewModel::repetirOnboarding, habilitado = !ocupado)
 
         Text("Bloqueo · M3", style = MaterialTheme.typography.headlineMedium, color = ColoresTF.Blanco)
         BotonL(ColoresTF.Celeste, "Revisar permisos", alTocar = viewModel::revisarPermisos)

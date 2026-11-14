@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface EstadoRaiz {
@@ -48,9 +47,5 @@ class RootViewModel @Inject constructor(
 
     fun reintentar() {
         intentos.value++
-    }
-
-    fun terminarOnboarding() {
-        viewModelScope.launch { estadoOnboarding.finalizar() }
     }
 }
