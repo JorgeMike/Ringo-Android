@@ -10,6 +10,12 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -92,7 +98,7 @@ internal fun TiempoMision(mision: Mision, estado: EstadoFlujo, viewModel: Mision
     val vueltas = if (abierto && sesion != null) RelojMision.vueltas(mision, RelojMision.transcurrido(sesion, ahora)) else 0
     val progreso by animateFloatAsState(RelojMision.progreso(mision, sesion, ahora), tween(1_000, easing = LinearEasing), label = "reloj")
 
-    Column(Modifier.fillMaxSize().padding(bottom = 32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    ColumnaMision(Modifier.padding(bottom = 32.dp)) {
         Titulo("AL RING", "contra el reloj")
         TextoContorno(
             mision.descripcion, arvo(18), ColoresTF.Blanco, ColoresTF.Negro, 2.dp,
@@ -141,6 +147,27 @@ internal fun TiempoMision(mision: Mision, estado: EstadoFlujo, viewModel: Mision
                 modifier = Modifier.padding(top = 8.dp, start = 32.dp, end = 32.dp),
             )
         }
+    }
+}
+
+/**
+ * La columna de una pantalla de misión. Mide al menos lo que la pantalla, así los
+ * `Spacer(weight)` reparten el espacio que sobra; si no cabe (pantallas bajas, muchos
+ * botones), se desliza en vez de cortar los botones de abajo.
+ */
+@Composable
+internal fun ColumnaMision(
+    modifier: Modifier = Modifier,
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    contenido: @Composable ColumnScope.() -> Unit,
+) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        Column(
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).heightIn(min = maxHeight).then(modifier),
+            verticalArrangement = verticalArrangement,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            content = contenido,
+        )
     }
 }
 
@@ -292,7 +319,7 @@ internal fun AccionesMision(mision: Mision, luchador: Int?, alReclamar: () -> Un
     var cantidad by rememberSaveable { mutableIntStateOf(0) }
     val completado = cantidad >= objetivo
 
-    Column(Modifier.fillMaxSize().padding(bottom = 24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(28.dp)) {
+    ColumnaMision(Modifier.padding(bottom = 24.dp), Arrangement.spacedBy(28.dp)) {
         Spacer(Modifier.weight(1f))
         Row(verticalAlignment = Alignment.CenterVertically) {
             ImagenPixel(luchador ?: R.drawable.ringo, 120.dp, Modifier.rotate(-12f))

@@ -109,7 +109,7 @@ internal fun MeditacionMision(mision: Mision, estado: EstadoFlujo, viewModel: Mi
     val opacidadCirculo by animateFloatAsState(if (inhalando == true) 0.85f else 0.25f, respiracion, label = "opacidad")
     val escalaLuchador by animateFloatAsState(if (inhalando == true) 1.08f else 0.95f, respiracion, label = "luchador")
 
-    Column(Modifier.fillMaxSize().padding(bottom = 32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    ColumnaMision(Modifier.padding(bottom = 32.dp), Arrangement.spacedBy(12.dp)) {
         Titulo("Medita", "un ratito")
         TextoContorno(mision.descripcion, arvo(18), ColoresTF.Blanco, ColoresTF.Negro, 2.dp, alineacion = TextAlign.Center, modifier = Modifier.padding(horizontal = 32.dp))
         Spacer(Modifier.weight(1f))
@@ -258,7 +258,7 @@ internal fun SecuenciaMision(mision: Mision, luchador: Int?, alReclamar: () -> U
     }
 
     val fraccion = (restante / total).coerceIn(0.0, 1.0).toFloat()
-    Column(Modifier.fillMaxSize().padding(bottom = 24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(20.dp)) {
+    ColumnaMision(Modifier.padding(bottom = 24.dp), Arrangement.spacedBy(20.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             ImagenPixel(luchador ?: R.drawable.ringo, 120.dp, Modifier.rotate(-12f))
             Titulo("¡Memoriza!", "la secuencia", Modifier.offset(x = (-40).dp))
