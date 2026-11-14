@@ -19,6 +19,9 @@ sealed interface FlujoRecompensa {
 
     data class MisionCompletada(val recompensaMision: RecompensaMision) : FlujoRecompensa
 
+    /** Subida de nivel comprada con puntos de poder (colección de luchadores). */
+    data class SubidaNivel(val resultado: ResultadoSubidaNivel, val luchador: Luchador) : FlujoRecompensa
+
     companion object {
         /** Al reclamar una misión. En iOS: `MainTabView.onChange(of: misionActiva)`. */
         fun alCompletarMision(rachaActivada: Boolean, diasDeRacha: Int, recompensa: RecompensaMision): FlujoRecompensa =
@@ -76,6 +79,7 @@ data class EstadoRecompensas(
             is FlujoRecompensa.SobrePersonaje -> EstadoRecompensas(PantallaRecompensa.Sobre(flujo.rareza))
             is FlujoRecompensa.RachaActivada -> EstadoRecompensas(PantallaRecompensa.RachaActivada(flujo.diasDeRacha, flujo.recompensaMision))
             is FlujoRecompensa.MisionCompletada -> EstadoRecompensas(PantallaRecompensa.MisionCompletada(flujo.recompensaMision))
+            is FlujoRecompensa.SubidaNivel -> EstadoRecompensas(PantallaRecompensa.SubidaNivel(flujo.resultado, flujo.luchador))
         }
     }
 }

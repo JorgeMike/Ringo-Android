@@ -1,10 +1,12 @@
 package com.rudoestudio.tiempofuera.domain.luchadores
 
 import com.rudoestudio.tiempofuera.core.logging.AppLogger
+import com.rudoestudio.tiempofuera.domain.perfil.UserProfileRepository
 import com.rudoestudio.tiempofuera.domain.servicios.AlcanceApp
 import com.rudoestudio.tiempofuera.domain.sincronizacion.UserApiRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.time.Clock
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -122,5 +124,34 @@ class SubirDeNivelLuchadorUseCase @Inject constructor(
             rarezaNueva = rarezaNueva,
             puntosGastados = costo,
         )
+    }
+}
+
+/**
+ * Sube un nivel al luchador con los puntos de poder del perfil y se los descuenta. En iOS
+ * esto lo hace `LuchadoresViewModel.subirNivel` (el caso de uso más `gastarPuntosPoder`).
+ */
+class ComprarSubidaNivelUseCase @Inject constructor(
+    private val subirDeNivel: SubirDeNivelLuchadorUseCase,
+    private val perfiles: UserProfileRepository,
+    private val reloj: Clock,
+) {
+    suspend operator fun invoke(luchador: Luchador): ResultadoSubidaNivel {
+        val perfil = perfiles.obtenerPerfil()
+        val resultado = subirDeNivel(luchador, perfil.puntosPoder)
+        perfiles.guardarPerfil(perfil.gastarPuntosPoder(resultado.puntosGastados, reloj.instant()))
+        return resultado
+    }
+}
+
+/** Cambia el luchador del perfil; solo los que ya tiene. En iOS: `LuchadoresViewModel.seleccionarLuchador`. */
+class EquiparLuchadorUseCase @Inject constructor(
+    private val perfiles: UserProfileRepository,
+) {
+    suspend operator fun invoke(luchador: Luchador) {
+        if (luchador.cantidad <= 0) return
+        val perfil = perfiles.obtenerPerfil()
+        if (perfil.luchadorSeleccionado.id == luchador.id) return
+        perfiles.guardarPerfil(perfil.copy(luchadorSeleccionado = luchador))
     }
 }

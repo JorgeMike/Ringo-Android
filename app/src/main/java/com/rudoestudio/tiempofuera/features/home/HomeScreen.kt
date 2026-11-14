@@ -74,6 +74,7 @@ import com.rudoestudio.tiempofuera.core.designsystem.color
 import com.rudoestudio.tiempofuera.core.designsystem.colorObscuro
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.ImagenPixel
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IndicadorNivelLuchador
+import com.rudoestudio.tiempofuera.core.designsystem.componentes.RayosDesvanecidos
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoConSombra
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoContorno
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.espiral
@@ -134,7 +135,7 @@ private fun ContenidoInicio(
             .padding(bottom = 24.dp),
     ) {
         Box(Modifier.fillMaxWidth()) {
-            Rayos(Modifier.matchParentSize())
+            RayosDesvanecidos(Modifier.matchParentSize())
             Column(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 TarjetaTiempoPantalla(estado.tiempoPantalla, alAbrirEstadisticas, Modifier.fillMaxWidth().padding(start = 32.dp))
                 LuchadorInicio(estado)
@@ -161,30 +162,6 @@ private fun ContenidoInicio(
             }
         }
         herramientas?.invoke()
-    }
-}
-
-/**
- * Los rayos de fondo, que se desvanecen hacia abajo. En iOS:
- * `Image("Rayos")` con máscara de degradado.
- */
-@Composable
-private fun Rayos(modifier: Modifier) {
-    Box(modifier.clipToBounds(), contentAlignment = Alignment.Center) {
-        Image(
-            painterResource(R.drawable.rayos), null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .requiredSize(560.dp)
-                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-                .drawWithContent {
-                    drawContent()
-                    drawRect(
-                        Brush.verticalGradient(0f to Color.Black, 0.66f to Color.Black, 1f to Color.Transparent),
-                        blendMode = BlendMode.DstIn,
-                    )
-                },
-        )
     }
 }
 

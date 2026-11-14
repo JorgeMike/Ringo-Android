@@ -3,6 +3,7 @@ package com.rudoestudio.tiempofuera.domain
 import com.rudoestudio.tiempofuera.core.preview.DatosPreview
 import com.rudoestudio.tiempofuera.domain.luchadores.Rareza
 import com.rudoestudio.tiempofuera.domain.luchadores.ResultadoRecoleccion
+import com.rudoestudio.tiempofuera.domain.luchadores.ResultadoSubidaNivel
 import com.rudoestudio.tiempofuera.domain.misiones.RecompensaMision
 import com.rudoestudio.tiempofuera.domain.recompensas.EstadoRecompensas
 import com.rudoestudio.tiempofuera.domain.recompensas.FlujoRecompensa
@@ -57,5 +58,15 @@ class FlujoRecompensasTest {
         val segundo = inicio.sobreRecolectado(luchador, recoleccion(duplicado = false))
         assertEquals(PantallaRecompensa.Sobre(Rareza.COMUN), segundo.pantalla)
         assertTrue(segundo.paso != inicio.paso)
+    }
+
+    @Test
+    fun `una subida de nivel comprada se festeja sola y termina`() {
+        val subida = ResultadoSubidaNivel(
+            luchador.id, 10, 40, 2, 3, Rareza.COMUN, Rareza.COMUN, puntosGastados = 30,
+        )
+        val estado = EstadoRecompensas.iniciar(FlujoRecompensa.SubidaNivel(subida, luchador))
+        assertEquals(PantallaRecompensa.SubidaNivel(subida, luchador), estado.pantalla)
+        assertTrue(estado.continuar().terminado)
     }
 }
