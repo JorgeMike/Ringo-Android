@@ -92,17 +92,18 @@ private fun fondo(ligaId: Int) = when (ligaId) {
 }
 
 /**
- * Lo que mide la tarjeta tal como la diseñó iOS: el fondo (360 × 128 dp) crecido 1.2 y
- * corrido 14 dp a la izquierda. En pantallas más angostas se encoge todo parejo.
+ * Lo que mide la tarjeta tal como la diseñó iOS: el fondo (360 × 128 dp) crecido 1.2. En
+ * pantallas más angostas se encoge todo parejo, dejando [MargenLateral] a cada lado.
  */
-private val AnchoDiseno = 460.dp
+private val AnchoDiseno = 432.dp
 private val AltoDiseno = 154.dp
+private val MargenLateral = 16.dp
 
 /** En iOS: `LigaCardView`. */
 @Composable
 private fun TarjetaLiga(liga: Liga, alTocar: () -> Unit) {
     BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        val escala = (maxWidth / AnchoDiseno).coerceAtMost(1f)
+        val escala = ((maxWidth - MargenLateral * 2) / AnchoDiseno).coerceAtMost(1f)
         Box(
             Modifier
                 .size(AnchoDiseno * escala, AltoDiseno * escala)
@@ -113,11 +114,10 @@ private fun TarjetaLiga(liga: Liga, alTocar: () -> Unit) {
                 Modifier.requiredSize(AnchoDiseno, AltoDiseno).graphicsLayer { scaleX = escala; scaleY = escala },
                 contentAlignment = Alignment.Center,
             ) {
-                Image(
-                    painterResource(fondo(liga.id)), null,
-                    Modifier.offset(x = (-14).dp).graphicsLayer { scaleX = 1.2f; scaleY = 1.2f },
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(painterResource(fondo(liga.id)), null, Modifier.graphicsLayer { scaleX = 1.2f; scaleY = 1.2f })
+                // iOS corre el fondo 14 dp a la izquierda; aquí se centra el fondo y se corre el
+                // contenido a la derecha: se ve igual, pero la tarjeta queda centrada.
+                Row(Modifier.offset(x = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.width(240.dp).padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         TextoConSombra(liga.nombre, TextStyle(fontFamily = PirataOne, fontSize = 30.sp), colorSombra = Color.Black)
                         TextoContorno(descripcion(liga.id), TextStyle(fontFamily = Arvo, fontWeight = FontWeight.Bold, fontSize = 18.sp), ColoresTF.Blanco, Color.Black, 2.dp)
