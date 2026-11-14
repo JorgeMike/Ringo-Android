@@ -52,6 +52,7 @@ import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
 import com.rudoestudio.tiempofuera.core.designsystem.PantallaPendiente
 import com.rudoestudio.tiempofuera.core.designsystem.TiempoFueraTheme
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BotonL
+import com.rudoestudio.tiempofuera.core.designsystem.componentes.ImagenPixel
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoContorno
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.Titulo
 import com.rudoestudio.tiempofuera.core.hapticos.LocalHaptics

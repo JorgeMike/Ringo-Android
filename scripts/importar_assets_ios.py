@@ -2,11 +2,13 @@
 """
 Importa los assets de la app iOS (Assets.xcassets) a recursos de Android (M0.7).
 
-    python3 scripts/importar_assets_ios.py [ruta/a/Assets.xcassets]
+    python3 scripts/importar_assets_ios.py [--solo-tablas] [ruta/a/Assets.xcassets]
 
 Por omisión lee ../TiempoFuera-iOS/Ringo-iOS/Assets.xcassets. Se puede volver a correr
-cuando cambien los assets en iOS: reescribe los archivos generados y la tabla
-docs/ASSETS.md.
+cuando cambien los assets en iOS: reescribe los archivos generados, la tabla
+docs/ASSETS.md y `AssetsIos.kt` (nombre de iOS -> drawable, para las imágenes cuyo
+nombre llega como dato, p. ej. `Luchador.imagen`). Con --solo-tablas no toca los
+recursos (no hace falta Inkscape): solo regenera la tabla y `AssetsIos.kt`.
 
 - PNG  -> res/drawable-nodpi/  (iOS los tiene en una sola escala "1x": no se reescalan)
 - SVG  -> res/drawable-xxxhdpi/ rasterizados a 4x con Inkscape. 9 SVG traen imágenes
@@ -30,6 +32,7 @@ XCASSETS_DEFAULT = RAIZ.parent / "TiempoFuera-iOS/Ringo-iOS/Assets.xcassets"
 ESCALA_SVG = 4  # xxxhdpi
 # Lo que generó la última corrida, para borrarlo antes de la siguiente.
 LISTA_GENERADOS = RAIZ / "scripts/assets_importados.txt"
+MAPA_KOTLIN = RAIZ / "app/src/main/java/com/rudoestudio/tiempofuera/core/designsystem/AssetsIos.kt"
 
 
 def sin_acentos(texto: str) -> str:
@@ -58,7 +61,10 @@ def archivo_de(set_dir: Path, extension: str) -> Path | None:
 
 
 def main() -> int:
-    xcassets = Path(sys.argv[1]) if len(sys.argv) > 1 else XCASSETS_DEFAULT
+    argumentos = sys.argv[1:]
+    solo_tablas = "--solo-tablas" in argumentos
+    argumentos = [a for a in argumentos if a != "--solo-tablas"]
+    xcassets = Path(argumentos[0]) if argumentos else XCASSETS_DEFAULT
     if not xcassets.is_dir():
         print(f"No encuentro {xcassets}", file=sys.stderr)
         return 1
@@ -69,7 +75,7 @@ def main() -> int:
         "wav": RES / "raw",
     }
     # Borrar lo importado antes para que un asset eliminado en iOS no se quede aquí.
-    if LISTA_GENERADOS.exists():
+    if LISTA_GENERADOS.exists() and not solo_tablas:
         for linea in LISTA_GENERADOS.read_text().splitlines():
             (RES / linea).unlink(missing_ok=True)
     for d in destinos.values():
@@ -100,7 +106,9 @@ def main() -> int:
             return 1
         vistos[nombre] = s
         carpeta = destinos[tipo]
-        if tipo == "png":
+        if solo_tablas:
+            destino = carpeta / f"{nombre}.{'wav' if tipo == 'wav' else 'png'}"
+        elif tipo == "png":
             destino = carpeta / f"{nombre}.png"
             shutil.copyfile(origen, destino)
         elif tipo == "svg":
@@ -131,8 +139,41 @@ def main() -> int:
     ]
     tabla += [f"| {c or '—'} | `{n}` | {t} | `{r}` |" for c, n, t, r in filas]
     (docs / "ASSETS.md").write_text("\n".join(tabla) + "\n")
+    escribir_mapa_kotlin([(unicodedata.normalize("NFC", n), r) for _, n, t, r in filas if t != "wav"])
     print(f"{len(filas)} assets importados")
     return 0
+
+
+def escribir_mapa_kotlin(imagenes: list[tuple[str, str]]) -> None:
+    def literal(texto: str) -> str:
+        return texto.replace("\\", "\\\\").replace('"', '\\"').replace("$", "\\$")
+
+    lineas = [
+        "package com.rudoestudio.tiempofuera.core.designsystem",
+        "",
+        "import androidx.annotation.DrawableRes",
+        "import com.rudoestudio.tiempofuera.R",
+        "import java.text.Normalizer",
+        "",
+        "// Generado por scripts/importar_assets_ios.py: no editar a mano.",
+        "",
+        "/**",
+        " * Imágenes por su nombre en el Asset Catalog de iOS, para cuando el nombre llega como dato",
+        " * (p. ej. `Luchador.imagen`, que es `Image(luchador.imagen)` en iOS).",
+        " */",
+        "object AssetsIos {",
+        "    private val imagenes: Map<String, Int> = mapOf(",
+    ]
+    lineas += [f'        "{literal(n)}" to {r},' for n, r in imagenes]
+    lineas += [
+        "    )",
+        "",
+        "    /** `null` si no existe (p. ej. una skin que esta versión no trae). */",
+        "    @DrawableRes",
+        "    fun imagen(nombre: String): Int? = imagenes[Normalizer.normalize(nombre, Normalizer.Form.NFC)]",
+        "}",
+    ]
+    MAPA_KOTLIN.write_text("\n".join(lineas) + "\n")
 
 
 if __name__ == "__main__":

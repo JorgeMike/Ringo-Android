@@ -40,6 +40,7 @@ import com.rudoestudio.tiempofuera.features.bloqueo.SelectorAppsScreen
 import com.rudoestudio.tiempofuera.features.estadisticas.EstadisticasUsoScreen
 import com.rudoestudio.tiempofuera.features.galeria.GaleriaScreen
 import com.rudoestudio.tiempofuera.features.home.HomeScreen
+import com.rudoestudio.tiempofuera.features.home.RachaStatsScreen
 import com.rudoestudio.tiempofuera.features.laboratorio.LaboratorioApiScreen
 import com.rudoestudio.tiempofuera.features.ligas.LigaNivelesScreen
 import com.rudoestudio.tiempofuera.features.luchadores.LuchadoresScreen
@@ -139,13 +140,7 @@ fun MainScaffold(
                         alAbrirGaleria = { navController.navigate(Galeria) },
                         alAbrirLaboratorio = { navController.navigate(LaboratorioApi) },
                         alAbrirEstadisticas = { navController.navigate(EstadisticasUso) },
-                        alAbrirPerfil = {
-                            navController.navigate(Perfil) {
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
+                        alAbrirRacha = { navController.navigate(RachaStats) },
                     )
                 }
                 composable<LigaNiveles> { entradaLiga ->
@@ -180,6 +175,9 @@ fun MainScaffold(
             }
             composable<AvisoAccesibilidad> {
                 AvisoAccesibilidadScreen(alVolver = { navController.popBackStack() })
+            }
+            composable<RachaStats> {
+                RachaStatsScreen(alVolver = { navController.popBackStack() })
             }
             composable<EstadisticasUso> {
                 EstadisticasUsoScreen(

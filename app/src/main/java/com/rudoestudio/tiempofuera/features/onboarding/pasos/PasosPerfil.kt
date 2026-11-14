@@ -65,6 +65,7 @@ import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
 import com.rudoestudio.tiempofuera.core.designsystem.TiempoFueraTheme
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BannerError
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BotonL
+import com.rudoestudio.tiempofuera.core.designsystem.componentes.ImagenPixel
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BotonS
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.DiagonalShape
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IconoBotonS

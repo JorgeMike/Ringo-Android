@@ -1,6 +1,5 @@
 package com.rudoestudio.tiempofuera.features.onboarding.pasos
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -8,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,10 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -80,25 +75,6 @@ internal fun FondoOnboarding(
         }
         Box(Modifier.fillMaxSize().safeDrawingPadding(), content = contenido)
     }
-}
-
-/**
- * Imagen pixel art (sin suavizado), con ancho fijo. En iOS: `.interpolation(.none)`. La
- * sombra suave que iOS les pone (`.shadow`) no se porta: en Compose solo sigue formas.
- *
- * La proporción va explícita: los sprites miden 32 o 64 px y, con solo el ancho, Compose
- * deja la altura en esos pixeles y la imagen sale diminuta.
- */
-@Composable
-internal fun ImagenPixel(@DrawableRes imagen: Int, ancho: Dp, modifier: Modifier = Modifier) {
-    val mapa = ImageBitmap.imageResource(imagen)
-    Image(
-        mapa,
-        contentDescription = null,
-        contentScale = ContentScale.Fit,
-        filterQuality = FilterQuality.None,
-        modifier = modifier.width(ancho).aspectRatio(mapa.width.toFloat() / mapa.height),
-    )
 }
 
 /** Pregunta en Pirata One entre las líneas decorativas. */

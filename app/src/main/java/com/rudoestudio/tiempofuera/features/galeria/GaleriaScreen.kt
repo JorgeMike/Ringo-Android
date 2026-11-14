@@ -52,6 +52,7 @@ import com.rudoestudio.tiempofuera.core.designsystem.componentes.EtiquetaHora
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.FondoLuchador
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.HeaderPuntos
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IconoBotonS
+import com.rudoestudio.tiempofuera.core.designsystem.componentes.ImagenPixel
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IndicadorNivelLuchador
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IconoApp
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IndicadorTiempo
@@ -153,6 +154,15 @@ fun GaleriaScreen(alVolver: () -> Unit) {
                         muestraIndicadorSubirNivel = i == 3,
                     )
                 }
+            }
+        }
+
+        Seccion("Imagen pixel") {
+            // Sprites de 32 px escalados sin suavizar, con su proporción.
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Bottom) {
+                ImagenPixel(R.drawable.ringo, 60.dp)
+                ImagenPixel(R.drawable.el_serenisimo, 100.dp)
+                ImagenPixel(R.drawable.i_5_kz, 140.dp)
             }
         }
 

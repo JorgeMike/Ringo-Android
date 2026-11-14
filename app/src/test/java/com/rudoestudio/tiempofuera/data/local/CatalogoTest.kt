@@ -1,5 +1,6 @@
 package com.rudoestudio.tiempofuera.data.local
 
+import com.rudoestudio.tiempofuera.core.designsystem.AssetsIos
 import com.rudoestudio.tiempofuera.core.preview.DatosPreview
 import com.rudoestudio.tiempofuera.data.catalogo.CATALOGO_LIGAS
 import com.rudoestudio.tiempofuera.data.catalogo.CATALOGO_LUCHADORES
@@ -83,5 +84,11 @@ class CatalogoTest {
         val secuencia = CATALOGO_MISIONES_DIARIAS.first { it.id == 1041 }
         assertEquals(3, secuencia.configuracion.secuencias!!.size)
         assertEquals(listOf("1", "3", "4", "2"), secuencia.configuracion.secuencias!!.first().secuencia)
+    }
+
+    @Test
+    fun `cada luchador del catalogo tiene su imagen importada de iOS`() {
+        val sinImagen = CATALOGO_LUCHADORES.filter { AssetsIos.imagen(it.imagen) == null }.map { it.nombre }
+        assertEquals(emptyList<String>(), sinImagen)
     }
 }

@@ -53,6 +53,10 @@ data object AvisoAccesibilidad
 @Serializable
 data class SelectorApps(val grupo: String)
 
+/** Días invicto: calendario y récords (M5.2). En iOS: `RachaStatsView`, desde Inicio. */
+@Serializable
+data object RachaStats
+
 /** Tiempo en pantalla y su configuración (M3.10). En iOS: `ScreenTimeStatsView`, desde Inicio. */
 @Serializable
 data object EstadisticasUso

@@ -62,8 +62,8 @@ app/src/main/java/com/rudoestudio/tiempofuera/
 - **Pantallas pendientes** usan `PantallaPendiente(titulo, tarea)` con el ID del tablero.
 - **Componentes:** antes de crear uno nuevo, revisar `core/designsystem/componentes` y la
   **galería** (Inicio → "Galería de componentes", `features/galeria`). Un componente nuevo
-  se agrega también a la galería. La galería es de desarrollo: quitar el acceso antes de
-  publicar.
+  se agrega también a la galería. La galería es de desarrollo: su acceso en Inicio solo
+  sale en debug (`BuildConfig.DEBUG`).
 - **Formas de iOS** que vienen de SVG (`buildPath(points:)`) se portan con `FormaPoligono`
   y los mismos puntos y lienzo, para que sean idénticas.
 - **Assets:** no se editan a mano. Vienen de iOS con
@@ -73,6 +73,9 @@ app/src/main/java/com/rudoestudio/tiempofuera/
   [`docs/ASSETS.md`](docs/ASSETS.md). El script solo borra y reescribe lo que generó
   (`scripts/assets_importados.txt`); aun así, un asset que sea solo de Android va en
   `drawable/` para no mezclarlo ni chocar de nombre con los de iOS.
+  Cuando el nombre de la imagen llega como dato (p. ej. `Luchador.imagen`), usar
+  `AssetsIos.imagen(nombre)`, que el mismo script genera (`--solo-tablas` lo regenera sin
+  Inkscape). Los sprites pixel art van con `ImagenPixel`.
 - **Paleta:** siempre clara, como en iOS (no hay versión oscura de los colores de marca).
   Para colores de marca usar `ColoresTF`; `MaterialTheme.colorScheme` solo para lo que
   Material ya cubre.
@@ -93,7 +96,8 @@ app/src/main/java/com/rudoestudio/tiempofuera/
 - **Errores del API:** cada repositorio traduce los códigos de *su* endpoint a errores del
   dominio (ver `AuthRepositoryImpl`); el mensaje del API (`{"error": …}`) se respeta.
 - **Laboratorio de API** (Inicio → "Laboratorio de API", `features/laboratorio`):
-  herramienta de desarrollo para probar contra staging. Quitar el acceso antes de publicar.
+  herramienta de desarrollo para probar contra staging (y "Repetir onboarding"). Su acceso
+  solo sale en debug.
 - **Tono de los textos:** el del estudio (directo, chilango, con humor; ver el
   `CLAUDE.md` de `rudo-studio/`).
 
