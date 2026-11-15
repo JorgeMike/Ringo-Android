@@ -8,12 +8,15 @@ import com.rudoestudio.tiempofuera.domain.luchadores.ResultadoSubidaNivel
 import com.rudoestudio.tiempofuera.domain.misiones.RecompensaMision
 
 /**
- * Lo que dispara una celebración. En iOS: `RecompensaFlowType`. La piñata y la lucha
- * ganada no se piden solas: salen dentro de [NivelLiga].
+ * Lo que dispara una celebración. En iOS: `RecompensaFlowType`. La lucha ganada no se pide
+ * sola: sale dentro de [NivelLiga].
  */
 sealed interface FlujoRecompensa {
     /** Abrir un sobre (tienda, onboarding). */
     data class SobrePersonaje(val rareza: Rareza) : FlujoRecompensa
+
+    /** La piñata de la tienda: se rompe y luego se abren sus sobres, de menor a mayor rareza. */
+    data class Pinata(val rarezas: List<Rareza>) : FlujoRecompensa
 
     /** Primera misión del día: racha y luego la misión completada. */
     data class RachaActivada(val diasDeRacha: Int, val recompensaMision: RecompensaMision) : FlujoRecompensa
@@ -117,6 +120,7 @@ data class EstadoRecompensas(
     companion object {
         fun iniciar(flujo: FlujoRecompensa): EstadoRecompensas = when (flujo) {
             is FlujoRecompensa.SobrePersonaje -> EstadoRecompensas(PantallaRecompensa.Sobre(flujo.rareza))
+            is FlujoRecompensa.Pinata -> flujo.rarezas.sorted().let { EstadoRecompensas(PantallaRecompensa.Pinata(it), sobresPendientes = it) }
             is FlujoRecompensa.RachaActivada -> EstadoRecompensas(PantallaRecompensa.RachaActivada(flujo.diasDeRacha, flujo.recompensaMision))
             is FlujoRecompensa.MisionCompletada -> EstadoRecompensas(PantallaRecompensa.MisionCompletada(flujo.recompensaMision))
             is FlujoRecompensa.SubidaNivel -> EstadoRecompensas(PantallaRecompensa.SubidaNivel(flujo.resultado, flujo.luchador))

@@ -120,4 +120,15 @@ class FlujoRecompensasTest {
         assertEquals(PantallaRecompensa.Sobre(Rareza.RARO), estado.pantalla)
         assertTrue(estado.sobreConError().terminado)
     }
+
+    @Test
+    fun `la pinata de la tienda abre sus sobres de menor a mayor`() {
+        var estado = EstadoRecompensas.iniciar(FlujoRecompensa.Pinata(listOf(Rareza.EPICO, Rareza.COMUN)))
+        assertEquals(PantallaRecompensa.Pinata(listOf(Rareza.COMUN, Rareza.EPICO)), estado.pantalla)
+        estado = estado.continuar()
+        assertEquals(PantallaRecompensa.Sobre(Rareza.COMUN), estado.pantalla)
+        estado = estado.sobreRecolectado(luchador, recoleccion(duplicado = false))
+        assertEquals(PantallaRecompensa.Sobre(Rareza.EPICO), estado.pantalla)
+        assertTrue(estado.sobreConError().terminado)
+    }
 }
