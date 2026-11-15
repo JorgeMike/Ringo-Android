@@ -47,6 +47,7 @@ import com.rudoestudio.tiempofuera.features.home.RachaStatsScreen
 import com.rudoestudio.tiempofuera.features.laboratorio.LaboratorioApiScreen
 import com.rudoestudio.tiempofuera.features.ligas.LigaNivelesScreen
 import com.rudoestudio.tiempofuera.features.luchadores.LuchadoresScreen
+import com.rudoestudio.tiempofuera.features.perfil.EditarGrupoAppsScreen
 import com.rudoestudio.tiempofuera.features.perfil.PerfilScreen
 import com.rudoestudio.tiempofuera.features.tienda.TiendaScreen
 import com.rudoestudio.tiempofuera.features.tiendamonedas.TiendaMonedasScreen
@@ -158,7 +159,16 @@ fun MainScaffold(
             }
             composable<Luchadores> { LuchadoresScreen() }
             composable<Tienda> { TiendaScreen() }
-            composable<Perfil> { PerfilScreen() }
+            composable<Perfil> {
+                PerfilScreen(
+                    alElegirApps = { grupo -> navController.navigate(SelectorApps(grupo.clave)) },
+                    alEditarGrupo = { grupo -> navController.navigate(EditarGrupoApps(grupo.clave)) },
+                    alAbrirPermisos = { navController.navigate(PermisosBloqueo) },
+                )
+            }
+            composable<EditarGrupoApps> {
+                EditarGrupoAppsScreen(alVolver = { navController.popBackStack() })
+            }
             composable<TiendaMonedas> {
                 TiendaMonedasScreen(alCerrar = { navController.popBackStack() })
             }

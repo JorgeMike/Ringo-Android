@@ -64,3 +64,7 @@ data object RachaStats
 /** Tiempo en pantalla y su configuración (M3.10). En iOS: `ScreenTimeStatsView`, desde Inicio. */
 @Serializable
 data object EstadisticasUso
+
+/** Lo que se sigue de un grupo de apps (M11.3), desde Perfil. [grupo] es la clave de `TipoGrupoApps`. */
+@Serializable
+data class EditarGrupoApps(val grupo: String)
