@@ -82,6 +82,11 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.glance.appwidget) // widget de la pantalla de inicio (M13.2)
+    // Lagartijas (M6.9): cámara frontal y detección de rostro (ML Kit vía Play Services).
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.mlkit.rostros)
     implementation(libs.hilt.work)
     ksp(libs.hilt.work.compiler)
 

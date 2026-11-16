@@ -126,6 +126,11 @@ private fun ContenidoMision(mision: Mision, estado: EstadoFlujo, viewModel: Misi
             TipoMision.MEDITACION -> MeditacionMision(mision, estado, viewModel)
             TipoMision.SECUENCIA -> SecuenciaMision(mision, estado.luchador, alReclamar = { viewModel.reclamar() })
             TipoMision.ESCENA -> EscenaMision(mision, alReclamar = { viewModel.reclamar() })
+            TipoMision.LAGARTIJAS -> LagartijasMision(
+                mision, estado.luchador,
+                alGuardarMarca = viewModel::registrarLagartijas,
+                alReclamar = { viewModel.reclamar(it) },
+            )
             else -> MensajeMision(
                 "Esta misión llega muy pronto",
                 "Todavía la estamos armando para Android (${tareaPendiente(mision.tipoMision)}). Mientras, échale ganas a las demás.",

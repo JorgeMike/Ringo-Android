@@ -14,6 +14,8 @@ import com.rudoestudio.tiempofuera.domain.misiones.ObtenerMisionPorIdUseCase
 import com.rudoestudio.tiempofuera.domain.misiones.RelojMision
 import com.rudoestudio.tiempofuera.domain.misiones.SesionTiempo
 import com.rudoestudio.tiempofuera.domain.misiones.SesionesMision
+import com.rudoestudio.tiempofuera.domain.perfil.EstadisticasEjercicioRepository
+import com.rudoestudio.tiempofuera.domain.perfil.RegistroLagartijas
 import com.rudoestudio.tiempofuera.domain.perfil.UserProfileRepository
 import com.rudoestudio.tiempofuera.domain.recompensas.FlujoRecompensa
 import com.rudoestudio.tiempofuera.features.recompensas.PresentadorRecompensas
@@ -58,6 +60,7 @@ class MisionFlujoViewModel @Inject constructor(
     private val completarMision: CompletarMisionUseCase,
     private val obtenerSeleccion: ObtenerSeleccionAppsUseCase,
     private val presentador: PresentadorRecompensas,
+    private val ejercicio: EstadisticasEjercicioRepository,
 ) : ViewModel() {
     private val misionId = estadoGuardado.toRoute<MisionFlujo>().misionId
 
@@ -142,6 +145,18 @@ class MisionFlujoViewModel @Inject constructor(
         } catch (e: Exception) {
             AppLogger.error(e, "MisionFlujoViewModel")
             _estado.update { it.copy(guardando = false, error = "No se pudo guardar la misión. Intenta reclamar la recompensa de nuevo.") }
+        }
+    }
+
+    /** Guarda la marca para el top de lagartijas (M6.9). En iOS: `registrarResultadoSiEsNecesario`. */
+    fun registrarLagartijas(inicio: Instant, cantidad: Int) {
+        viewModelScope.launch {
+            try {
+                ejercicio.registrarLagartijas(RegistroLagartijas(fecha = inicio, cantidad = cantidad))
+            } catch (e: Exception) {
+                AppLogger.error(e, "MisionFlujoViewModel")
+                _estado.update { it.copy(error = "No se pudo guardar este resultado para tu top de lagartijas.") }
+            }
         }
     }
 

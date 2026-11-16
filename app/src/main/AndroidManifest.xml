@@ -12,6 +12,11 @@
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
+    <!-- Lagartijas (M6.9): la cámara frontal ve tu cara para contar. Se pide al abrir la misión.
+         No es obligatoria: sin cámara la app funciona, solo esa misión no. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
 
     <!-- Nombres e íconos de las apps con ícono en el launcher, sin pedir QUERY_ALL_PACKAGES
          (que Play revisa aparte). Basta para el selector de apps (M3.2). -->
