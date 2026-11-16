@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -123,7 +124,7 @@ fun MisionCard(mision: Mision, completada: Boolean, bloqueada: Boolean, alSelecc
     Box(
         modifier
             .fillMaxWidth()
-            .padding(top = 18.dp) // lo que sobresale la recompensa
+            .padding(top = 28.dp) // lo que sobresale la recompensa (su fondo mide 57 de alto)
             .clickable(interaccion, indication = null, enabled = !atenuada, role = Role.Button, onClick = alSeleccionar)
             .semantics(mergeDescendants = true) {
                 contentDescription = "${mision.titulo}. ${mision.descripcion}. " +
@@ -176,7 +177,9 @@ private fun InsigniaRecompensa(recompensa: RecompensaMision, atenuada: Boolean, 
         Image(
             painterResource(R.drawable.badge_mision_r), null,
             colorFilter = if (atenuada) SinColor else null,
-            modifier = Modifier.matchParentSize().offset((-10).dp, 2.dp),
+            // A su tamaño (138×57), centrada detrás, como el `.background` de iOS: estirada al
+            // tamaño de los números quedaba corta y el último dígito se salía.
+            modifier = Modifier.matchParentSize().wrapContentSize(unbounded = true).offset((-10).dp, 2.dp),
         )
         Row(
             Modifier.padding(horizontal = 14.dp, vertical = 6.dp).offset(x = (-8).dp).rotate(4f),

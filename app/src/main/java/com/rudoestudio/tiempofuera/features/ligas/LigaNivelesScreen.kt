@@ -211,7 +211,8 @@ private fun Camino(estado: EstadoLiga, modifier: Modifier, alCobrar: (NivelLiga)
                 .heightIn(min = maxHeight)
                 .padding(top = 44.dp, bottom = 16.dp)
                 .drawCamino(estado.paleta.camino),
-            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Bottom),
+            // 28 dp entre niveles: con 12 se veían amontonados.
+            verticalArrangement = Arrangement.spacedBy(28.dp, Alignment.Bottom),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             estado.visibles.reversed().forEach { nivel ->

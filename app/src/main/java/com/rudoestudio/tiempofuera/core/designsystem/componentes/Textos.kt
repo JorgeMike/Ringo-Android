@@ -4,12 +4,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -21,6 +28,10 @@ import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
  * Texto con contorno. En iOS: `StrokedText`, que lo simula con 16 copias desplazadas;
  * aquí se dibuja un trazo real (`drawStyle = Stroke`). [grosor] es cuánto sobresale el
  * contorno de la letra, igual que `strokeWidth` en iOS.
+ *
+ * El contorno se pinta desde la caja de afuera (`drawBehind`) con el mismo acomodo del
+ * texto: un `Text` recorta lo que sale de su caja cuando lleva "…" (y el contorno siempre
+ * sale), y se comía la orilla de la primera letra ("Suéltate la lengua…").
  */
 @Composable
 fun TextoContorno(
@@ -34,17 +45,17 @@ fun TextoContorno(
     maxLineas: Int = Int.MAX_VALUE,
 ) {
     val trazo = with(LocalDensity.current) { grosor.toPx() } * 2 // el trazo va mitad dentro, mitad fuera
-    val desborde = if (maxLineas == Int.MAX_VALUE) TextOverflow.Clip else TextOverflow.Ellipsis
-    Box(modifier) {
+    val desborde = if (maxLineas == Int.MAX_VALUE) TextOverflow.Visible else TextOverflow.Ellipsis
+    var acomodo by remember { mutableStateOf<TextLayoutResult?>(null) }
+    Box(
+        modifier.drawBehind {
+            acomodo?.let { drawText(it, color = contorno, drawStyle = Stroke(width = trazo, join = StrokeJoin.Round)) }
+        },
+    ) {
         Text(
-            texto,
-            style = estilo.copy(drawStyle = Stroke(width = trazo, join = StrokeJoin.Round)),
-            color = contorno,
-            textAlign = alineacion,
-            maxLines = maxLineas,
-            overflow = desborde,
+            texto, style = estilo, color = relleno, textAlign = alineacion, maxLines = maxLineas, overflow = desborde,
+            onTextLayout = { acomodo = it },
         )
-        Text(texto, style = estilo, color = relleno, textAlign = alineacion, maxLines = maxLineas, overflow = desborde)
     }
 }
 
