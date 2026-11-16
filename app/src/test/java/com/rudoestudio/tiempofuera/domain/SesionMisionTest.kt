@@ -45,6 +45,31 @@ class SesionMisionTest {
     }
 
     @Test
+    fun `la notificacion cuenta hacia atras, hacia adelante o se congela en pausa`() {
+        val fin = inicio.plusSeconds(600)
+        val corriendo = RelojMision.aviso(fija, SesionTiempo(fija.id, inicio, fin), inicio)!!
+        assertEquals(fin, corriendo.cuentaRegresivaHasta)
+        assertNull(corriendo.cuentaDesde)
+
+        // Abierta después de una pausa: el reloj arranca contando lo que ya llevaba.
+        val reanudada = SesionTiempo(abierta.id, inicio, fin = null, segundosPrevios = 120)
+        assertEquals(inicio.minusSeconds(120), RelojMision.aviso(abierta, reanudada, inicio)!!.cuentaDesde)
+
+        val pausada = SesionTiempo(fija.id, inicio, fin = null, pausada = true, restanteAlPausar = 90)
+        val enPausa = RelojMision.aviso(fija, pausada, inicio)!!
+        assertNull(enPausa.cuentaRegresivaHasta)
+        assertTrue(enPausa.texto.startsWith("En pausa · 01:30"))
+    }
+
+    @Test
+    fun `la notificacion se va al acabar o al terminar`() {
+        val sesion = SesionTiempo(fija.id, inicio, inicio.plusSeconds(600))
+        assertNull(RelojMision.aviso(fija, sesion, inicio.plusSeconds(601)))
+        assertNull(RelojMision.aviso(abierta, SesionTiempo(abierta.id, inicio, null, terminada = true, segundosAlTerminar = 400), inicio))
+        assertNull(RelojMision.aviso(abierta, sesion, inicio)) // otra misión
+    }
+
+    @Test
     fun `iniciar bloquea con la duracion y rendirse libera y borra`() = runTest {
         val bloqueos = BloqueosFake()
         val repo = RepoFake()

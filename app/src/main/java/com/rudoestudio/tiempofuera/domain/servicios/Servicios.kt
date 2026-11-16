@@ -4,7 +4,14 @@ import java.time.Instant
 import javax.inject.Qualifier
 
 /** Canales de notificación: el usuario puede apagar cada uno por separado en Ajustes. */
-enum class CanalNotificacion { SEGUIMIENTO, PROTECCION, RACHA }
+enum class CanalNotificacion {
+    SEGUIMIENTO,
+    PROTECCION,
+    RACHA,
+
+    /** La misión en curso: notificación fija y sin sonido (M13.1). */
+    MISION,
+}
 
 /**
  * Notificaciones locales. En iOS: `NotificationServiceProtocol`. Sin permiso de

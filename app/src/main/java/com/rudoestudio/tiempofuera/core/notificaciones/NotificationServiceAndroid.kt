@@ -1,6 +1,7 @@
 package com.rudoestudio.tiempofuera.core.notificaciones
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -62,7 +63,7 @@ class NotificationServiceAndroid @Inject constructor(
         internal const val EXTRA_TITULO = "titulo"
         internal const val EXTRA_CUERPO = "cuerpo"
 
-        private fun idCanal(canal: CanalNotificacion) = canal.name.lowercase()
+        internal fun idCanal(canal: CanalNotificacion) = canal.name.lowercase()
 
         private fun crearCanales(contexto: Context) {
             val gestor = contexto.getSystemService(NotificationManager::class.java)
@@ -73,27 +74,35 @@ class NotificationServiceAndroid @Inject constructor(
                     .apply { description = "Si el bloqueo de apps se apaga o deja de funcionar." },
                 NotificationChannel(idCanal(CanalNotificacion.RACHA), "Racha", NotificationManager.IMPORTANCE_DEFAULT)
                     .apply { description = "Recordatorios para no perder tu racha." },
+                NotificationChannel(idCanal(CanalNotificacion.MISION), "Misión en curso", NotificationManager.IMPORTANCE_LOW)
+                    .apply { description = "El reloj de la misión que estás haciendo." },
             ).forEach(gestor::createNotificationChannel)
         }
 
-        internal fun publicar(contexto: Context, id: String, titulo: String, cuerpo: String, canal: CanalNotificacion, deepLink: String?) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                ContextCompat.checkSelfPermission(contexto, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-            ) {
-                return
-            }
+        /** Sin el permiso (Android 13+) no se muestra nada. */
+        internal fun puedePublicar(contexto: Context): Boolean =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(contexto, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+
+        /** Abre la app (o el [deepLink]) al tocar la notificación [id]. */
+        internal fun alTocar(contexto: Context, id: String, deepLink: String?): PendingIntent {
             val abrir = if (deepLink != null) {
                 Intent(Intent.ACTION_VIEW, Uri.parse(deepLink), contexto, MainActivity::class.java)
             } else {
                 Intent(contexto, MainActivity::class.java)
             }.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            val alTocar = PendingIntent.getActivity(contexto, id.hashCode(), abrir, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            return PendingIntent.getActivity(contexto, id.hashCode(), abrir, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        }
+
+        @SuppressLint("MissingPermission") // lo revisa puedePublicar
+        internal fun publicar(contexto: Context, id: String, titulo: String, cuerpo: String, canal: CanalNotificacion, deepLink: String?) {
+            if (!puedePublicar(contexto)) return
             val notificacion = NotificationCompat.Builder(contexto, idCanal(canal))
                 .setSmallIcon(R.drawable.ic_notificacion)
                 .setContentTitle(titulo)
                 .setContentText(cuerpo)
                 .setStyle(NotificationCompat.BigTextStyle().bigText(cuerpo))
-                .setContentIntent(alTocar)
+                .setContentIntent(alTocar(contexto, id, deepLink))
                 .setAutoCancel(true)
                 .build()
             NotificationManagerCompat.from(contexto).notify(id, 0, notificacion)

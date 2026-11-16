@@ -46,6 +46,19 @@ interface SesionMisionRepository {
     suspend fun borrar()
 }
 
+/**
+ * La notificación fija de la misión en curso (M13.1). El reloj lo cuenta Android solo: con
+ * tiempo fijo hacia atrás hasta [cuentaRegresivaHasta]; en modo abierto hacia adelante desde
+ * [cuentaDesde]. En pausa no hay reloj, solo el texto. En iOS: `TiempoLiveActivity`.
+ */
+data class AvisoMision(
+    val misionId: Int,
+    val titulo: String,
+    val texto: String,
+    val cuentaRegresivaHasta: Instant? = null,
+    val cuentaDesde: Instant? = null,
+)
+
 /** Cuentas del reloj de la misión. En iOS: las propiedades calculadas de `TiempoViewModel`. */
 object RelojMision {
     /** Duración de la misión de tiempo fijo (30 s si la semilla no la trae, como iOS). */
@@ -103,6 +116,25 @@ object RelojMision {
     /** Corriendo: ni en pausa ni acabada. */
     fun corriendo(mision: Mision, sesion: SesionTiempo?, ahora: Instant): Boolean =
         sesion != null && !sesion.pausada && !seAcabo(mision, sesion, ahora)
+
+    /**
+     * La notificación de la misión, o `null` si ya no va: acabada (con tiempo fijo avisa la
+     * notificación de "¡Sesión completada!") o terminada para reclamar.
+     */
+    fun aviso(mision: Mision, sesion: SesionTiempo, ahora: Instant): AvisoMision? {
+        if (sesion.misionId != mision.id || seAcabo(mision, sesion, ahora)) return null
+        return when {
+            sesion.pausada -> AvisoMision(mision.id, mision.titulo, "En pausa · ${formato(segundosEnPantalla(mision, sesion, ahora))}. Tus apps quedaron libres.")
+            esModoAbierto(mision) -> AvisoMision(
+                mision.id, mision.titulo, "Suma vueltas hasta que decidas terminar. Tus apps de distracción siguen bloqueadas.",
+                cuentaDesde = sesion.inicio.minusSeconds(sesion.segundosPrevios.toLong()),
+            )
+            else -> AvisoMision(
+                mision.id, mision.titulo, "Aguanta el round: tus apps de distracción siguen bloqueadas.",
+                cuentaRegresivaHasta = sesion.fin,
+            )
+        }
+    }
 
     /** Lo que dice el aviso de arriba (en iOS: `SesionMisionStore.textoEstado`). */
     fun textoEstado(mision: Mision, sesion: SesionTiempo, ahora: Instant): String {

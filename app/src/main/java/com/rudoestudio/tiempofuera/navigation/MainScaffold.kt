@@ -82,7 +82,8 @@ fun MainScaffold(
         when (link) {
             is DeepLink.IdMision -> {
                 AppLogger.info("Deep link: misión ${link.id}")
-                navController.navigate(MisionFlujo(link.id))
+                // Desde la notificación de la misión en curso: si ya estás en ella, no se apila otra.
+                navController.navigate(MisionFlujo(link.id)) { launchSingleTop = true }
             }
         }
         alAtenderDeepLink()
