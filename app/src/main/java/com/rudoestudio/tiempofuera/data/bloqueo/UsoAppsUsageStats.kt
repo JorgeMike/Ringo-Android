@@ -7,6 +7,7 @@ import android.os.SystemClock
 import android.provider.Settings
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.rudoestudio.tiempofuera.core.logging.AppLogger
 import com.rudoestudio.tiempofuera.data.local.AlmacenJson
 import com.rudoestudio.tiempofuera.domain.bloqueo.UsoApps
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -16,6 +17,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.time.Clock
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -44,6 +46,9 @@ class UsoAppsUsageStats @Inject constructor(
 
         val guardado = almacen.leer(CLAVE, ContadorUsoDiario.serializer()) ?: ContadorUsoDiario.nuevo(hoy, arranque, inicioDia)
         val vigente = guardado.vigente(hoy, arranque, horaArranque, inicioDia)
+        if (vigente.desdeMs != guardado.desdeMs || vigente.fecha != guardado.fecha) {
+            AppLogger.info("Uso: se mide desde ${Instant.ofEpochMilli(vigente.desdeMs)} (arranque ${vigente.arranque}, antes ${guardado.arranque})")
+        }
         val ahora = reloj.millis()
         // Se lee desde 3 h antes para atrapar apps que ya estaban abiertas al empezar.
         val parcial = CalculoUso.usoMs(eventos(vigente.desdeMs - TRES_HORAS, ahora), vigente.desdeMs, ahora)

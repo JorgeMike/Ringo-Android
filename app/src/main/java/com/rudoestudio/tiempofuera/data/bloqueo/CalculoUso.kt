@@ -91,15 +91,22 @@ data class ContadorUsoDiario(
     val desdeMs: Long,
     val base: Map<String, Long> = emptyMap(),
     val ultimo: Map<String, Long> = emptyMap(),
+    /** Los contadores sin versión (0) son de antes del arreglo de abajo y se vuelven a medir. */
+    val version: Int = 0,
 ) {
-    /** Se mantiene si es el mismo día y el mismo arranque; si no, arranca el periodo nuevo. */
+    /**
+     * Día nuevo (o contador viejo): todo desde cero, medido desde la medianoche. Mismo día
+     * con un reinicio de verdad: lo guardado pasa a ser la base y se mide desde el arranque.
+     *
+     * Un reinicio de verdad es el que pasó **después** de que se empezó a medir. Antes solo
+     * se comparaba el número de arranque: un día Android no lo dio (-1) y luego sí, y se
+     * midió "desde el arranque", que era de tres días antes: amaneció con 40 h de uso.
+     */
     fun vigente(hoy: LocalDate, arranqueActual: Int, horaArranqueMs: Long, inicioDiaMs: Long): ContadorUsoDiario {
-        if (fecha == hoy.toString() && arranque == arranqueActual) return this
-        val mismoDia = fecha == hoy.toString()
-        // Mismo día con arranque nuevo: lo guardado pasa a ser la base y se mide desde el
-        // arranque. Día nuevo: todo desde cero.
-        val nuevaBase = if (mismoDia) ultimo else emptyMap()
-        return ContadorUsoDiario(hoy.toString(), arranqueActual, if (mismoDia) horaArranqueMs else inicioDiaMs, nuevaBase, nuevaBase)
+        if (version != VERSION || fecha != hoy.toString()) return nuevo(hoy, arranqueActual, inicioDiaMs)
+        if (arranqueActual < 0 || arranqueActual == arranque) return this
+        if (horaArranqueMs <= desdeMs) return copy(arranque = arranqueActual)
+        return copy(arranque = arranqueActual, desdeMs = horaArranqueMs, base = ultimo)
     }
 
     /** Suma lo medido ([parcial]) y regresa el contador actualizado. */
@@ -111,6 +118,8 @@ data class ContadorUsoDiario(
     }
 
     companion object {
-        fun nuevo(hoy: LocalDate, arranque: Int, inicioDiaMs: Long) = ContadorUsoDiario(hoy.toString(), arranque, inicioDiaMs)
+        const val VERSION = 2
+
+        fun nuevo(hoy: LocalDate, arranque: Int, inicioDiaMs: Long) = ContadorUsoDiario(hoy.toString(), arranque, inicioDiaMs, version = VERSION)
     }
 }

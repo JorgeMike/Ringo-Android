@@ -56,4 +56,29 @@ class CalculoUsoTest {
         val manana = despues.vigente(hoy.plusDays(1), 8, 500 * min, inicioDiaMs = 1440 * min).con(emptyMap())
         assertEquals(emptyMap<String, Long>(), manana.ultimo)
     }
+
+    @Test
+    fun `un arranque de dias atras no es un reinicio de hoy`() {
+        val hoy = LocalDate.of(2026, 11, 16)
+        val medianoche = 10_000 * min
+        val arranqueHaceDias = medianoche - 3 * 1440 * min
+        // Android no dio el número de arranque (-1) al empezar el día y luego sí (518).
+        val antes = ContadorUsoDiario.nuevo(hoy, arranque = -1, inicioDiaMs = medianoche).con(mapOf("netflix" to 20 * min))
+        val despues = antes.vigente(hoy, arranqueActual = 518, horaArranqueMs = arranqueHaceDias, inicioDiaMs = medianoche)
+        assertEquals(medianoche, despues.desdeMs)
+        assertEquals(emptyMap<String, Long>(), despues.base)
+        assertEquals(518, despues.arranque)
+        // Si Android no da el número de arranque, no se supone un reinicio.
+        assertEquals(despues, despues.vigente(hoy, arranqueActual = -1, horaArranqueMs = arranqueHaceDias, inicioDiaMs = medianoche))
+    }
+
+    @Test
+    fun `un contador de antes del arreglo se vuelve a medir desde la medianoche`() {
+        val hoy = LocalDate.of(2026, 11, 16)
+        val inflado = ContadorUsoDiario(hoy.toString(), 518, desdeMs = 0, base = mapOf("ig" to 99 * min), ultimo = mapOf("ig" to 300 * min))
+        val nuevo = inflado.vigente(hoy, 518, horaArranqueMs = 0, inicioDiaMs = 5_000 * min)
+        assertEquals(5_000 * min, nuevo.desdeMs)
+        assertEquals(emptyMap<String, Long>(), nuevo.ultimo)
+        assertEquals(ContadorUsoDiario.VERSION, nuevo.version)
+    }
 }
