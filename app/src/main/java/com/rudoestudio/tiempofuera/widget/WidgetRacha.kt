@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -61,16 +60,18 @@ import javax.inject.Singleton
 private val Blanco = ColorProvider(Color.White)
 private val Amarillo = ColorProvider(ColoresTF.Amarillo)
 private val Verde = ColorProvider(Color(0xFF8FD16A))
-private val Pequeno = DpSize(110.dp, 110.dp)
-private val Ancho = DpSize(250.dp, 110.dp)
+/** Lo que mide el widget en su tamaño mínimo (2×2): de ahí crece todo parejo. */
+private val Base = 110.dp
 
 /**
  * El widget de la pantalla de inicio (M13.2): tus días invicto, tu luchador y si ya
- * hiciste la misión de hoy. Al tocarlo abre la app. En chico va en columna; a lo ancho,
- * el luchador a la izquierda. En iOS: `Ringo_Widget` (allá sigue siendo la plantilla).
+ * hiciste la misión de hoy. Al tocarlo abre la app. Cuadrado va en columna; a lo ancho,
+ * el luchador a la izquierda. Todo crece con el tamaño real del widget (`SizeMode.Exact`):
+ * con tamaños fijos, uno grande se quedaba con el diseño chico en medio. En iOS:
+ * `Ringo_Widget` (allá sigue siendo la plantilla).
  */
 class WidgetRacha : GlanceAppWidget() {
-    override val sizeMode = SizeMode.Responsive(setOf(Pequeno, Ancho))
+    override val sizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val entrada = EntryPointAccessors.fromApplication(context, PuntoEntradaWidget::class.java)
@@ -95,35 +96,39 @@ class WidgetRacha : GlanceAppWidget() {
             return
         }
         val luchador = sprite?.let { ImageProvider(it) } ?: ImageProvider(R.drawable.ringo)
-        if (LocalSize.current.width >= Ancho.width) {
-            Row(base, verticalAlignment = Alignment.CenterVertically) {
-                Image(luchador, estado.luchadorNombre, GlanceModifier.size(88.dp))
-                Spacer(GlanceModifier.width(10.dp))
+        val tamano = LocalSize.current
+        val ancho = tamano.width >= tamano.height * 1.6f
+        // Cuánto crece respecto al 2×2: por el lado que limita (alto si es ancho).
+        val e = ((if (ancho) tamano.height else minOf(tamano.width, tamano.height)) / Base).coerceIn(1f, 2.2f)
+        if (ancho) {
+            Row(base, verticalAlignment = Alignment.CenterVertically, horizontalAlignment = Alignment.CenterHorizontally) {
+                Image(luchador, estado.luchadorNombre, GlanceModifier.size(80.dp * e))
+                Spacer(GlanceModifier.width(12.dp))
                 Column {
-                    Dias(estado)
-                    Text(estado.mensaje, style = TextStyle(color = colorMensaje(estado), fontSize = 13.sp, fontWeight = FontWeight.Bold), maxLines = 2)
+                    Dias(estado, e)
+                    Text(estado.mensaje, style = TextStyle(color = colorMensaje(estado), fontSize = (13 * e).sp, fontWeight = FontWeight.Bold), maxLines = 2)
                     if (estado.protectores > 0) {
-                        Text("🛡️ ${estado.protectores} protector${if (estado.protectores == 1) "" else "es"}", style = TextStyle(color = Blanco, fontSize = 12.sp))
+                        Text("🛡️ ${estado.protectores} protector${if (estado.protectores == 1) "" else "es"}", style = TextStyle(color = Blanco, fontSize = (12 * e).sp))
                     }
                 }
             }
         } else {
             Column(base, verticalAlignment = Alignment.CenterVertically, horizontalAlignment = Alignment.CenterHorizontally) {
-                Dias(estado)
-                Image(luchador, estado.luchadorNombre, GlanceModifier.size(48.dp))
-                Text(estado.mensaje, style = TextStyle(color = colorMensaje(estado), fontSize = 11.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center), maxLines = 2)
+                Dias(estado, e)
+                Image(luchador, estado.luchadorNombre, GlanceModifier.size(44.dp * e))
+                Text(estado.mensaje, style = TextStyle(color = colorMensaje(estado), fontSize = (11 * e).sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center), maxLines = 2)
             }
         }
     }
 
     @Composable
-    private fun Dias(estado: EstadoWidgetRacha) {
+    private fun Dias(estado: EstadoWidgetRacha, e: Float) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(ImageProvider(R.drawable.racha_icon), null, GlanceModifier.size(24.dp, 32.dp))
+            Image(ImageProvider(R.drawable.racha_icon), null, GlanceModifier.size(24.dp * e, 32.dp * e))
             Spacer(GlanceModifier.width(4.dp))
-            Text("${estado.diasRacha}", style = TextStyle(color = Blanco, fontSize = 30.sp, fontWeight = FontWeight.Bold))
+            Text("${estado.diasRacha}", style = TextStyle(color = Blanco, fontSize = (30 * e).sp, fontWeight = FontWeight.Bold))
             Spacer(GlanceModifier.width(4.dp))
-            Text(if (estado.diasRacha == 1) "día\ninvicto" else "días\ninvicto", style = TextStyle(color = Blanco, fontSize = 11.sp))
+            Text(if (estado.diasRacha == 1) "día\ninvicto" else "días\ninvicto", style = TextStyle(color = Blanco, fontSize = (11 * e).sp))
         }
     }
 
