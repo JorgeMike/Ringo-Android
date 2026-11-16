@@ -155,7 +155,7 @@ internal fun SobrePersonajePantalla(
         if (fallo) {
             Column(Modifier.fillMaxSize().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)) {
                 TextoContorno("No se pudo abrir el sobre", pirata(32), ColoresTF.Blanco, Color.Black, 3.dp, alineacion = TextAlign.Center)
-                BotonL(ColoresTF.Verde, "CONTINUAR", alTocar = alFallar)
+                BotonL(ColoresTF.Verde, "CONTINUAR", alTocar = alFallar, modifier = Modifier.ocultoAlCompartir())
             }
             return@Box
         }
@@ -244,6 +244,7 @@ internal fun SobrePersonajePantalla(
                             recolectando = false
                         }
                     },
+                    modifier = Modifier.ocultoAlCompartir(),
                 )
             }
         }
@@ -347,7 +348,7 @@ internal fun SubidaNivelPantalla(resultado: ResultadoSubidaNivel, luchador: Luch
                 }
             }
             Spacer(Modifier.weight(1f))
-            BotonL(ColoresTF.Verde, "CONTINUAR", alTocar = alContinuar, modifier = Modifier.padding(top = 20.dp))
+            BotonL(ColoresTF.Verde, "CONTINUAR", alTocar = alContinuar, modifier = Modifier.padding(top = 20.dp).ocultoAlCompartir())
         }
     }
 }

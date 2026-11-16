@@ -306,7 +306,7 @@ internal fun LuchaGanadaPantalla(recompensa: RecompensaNivel, luchador: Luchador
                 }
             }
             Spacer(Modifier.weight(1f))
-            BotonL(ColoresTF.Amarillo, "¡A COBRAR!", alTocar = alContinuar, habilitado = v > 4, modifier = Modifier.pop(v > 4))
+            BotonL(ColoresTF.Amarillo, "¡A COBRAR!", alTocar = alContinuar, habilitado = v > 4, modifier = Modifier.pop(v > 4).ocultoAlCompartir())
         }
     }
 }

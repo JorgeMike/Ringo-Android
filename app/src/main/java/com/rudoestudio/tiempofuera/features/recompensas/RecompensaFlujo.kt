@@ -85,6 +85,7 @@ fun RecompensaFlujo(flujo: FlujoRecompensa, alTerminar: () -> Unit, viewModel: R
             .background(ColoresTF.Azul)
             .clickable(remember { MutableInteractionSource() }, indication = null) {},
     ) {
+        CompartibleRecompensa {
         AnimatedContent(estado, contentKey = { it.paso }, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "recompensa") { e ->
             when (val p = e.pantalla) {
                 is PantallaRecompensa.Sobre -> SobrePersonajePantalla(
@@ -100,6 +101,7 @@ fun RecompensaFlujo(flujo: FlujoRecompensa, alTerminar: () -> Unit, viewModel: R
                 is PantallaRecompensa.LuchaGanada -> LuchaGanadaPantalla(p.recompensa, p.luchador, p.rival, viewModel::campana) { estado = estado.continuar() }
                 null -> Unit
             }
+        }
         }
     }
 }
@@ -168,7 +170,7 @@ internal fun RachaActivadaPantalla(dias: Int, luchador: Int?, alContinuar: () ->
                 modifier = Modifier.padding(horizontal = 46.dp).offset(y = (-18).dp).aparece(v > 8),
             )
             Spacer(Modifier.weight(1f))
-            BotonL(ColoresTF.Celeste, "¡¡VAMOOOOOS!!", alTocar = alContinuar, habilitado = v > 9, modifier = Modifier.pop(v > 9))
+            BotonL(ColoresTF.Celeste, "¡¡VAMOOOOOS!!", alTocar = alContinuar, habilitado = v > 9, modifier = Modifier.pop(v > 9).ocultoAlCompartir())
         }
     }
 }
@@ -211,7 +213,7 @@ internal fun MisionCompletadaPantalla(recompensa: RecompensaMision, luchador: In
                 }
             }
             Spacer(Modifier.weight(1f))
-            BotonL(ColoresTF.Celeste, "TRAE PA' ACÁ", alTocar = alContinuar, habilitado = v > 3, modifier = Modifier.pop(v > 3))
+            BotonL(ColoresTF.Celeste, "TRAE PA' ACÁ", alTocar = alContinuar, habilitado = v > 3, modifier = Modifier.pop(v > 3).ocultoAlCompartir())
         }
     }
 }
