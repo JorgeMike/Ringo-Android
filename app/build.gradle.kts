@@ -81,6 +81,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.glance.appwidget) // widget de la pantalla de inicio (M13.2)
     implementation(libs.hilt.work)
     ksp(libs.hilt.work.compiler)
 

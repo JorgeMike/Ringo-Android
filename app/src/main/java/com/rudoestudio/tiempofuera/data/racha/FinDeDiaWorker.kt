@@ -15,16 +15,18 @@ import com.rudoestudio.tiempofuera.domain.onboarding.EstadoOnboardingRepository
 import com.rudoestudio.tiempofuera.domain.perfil.ProcesarFinDeDiaUseCase
 import com.rudoestudio.tiempofuera.domain.perfil.ProgramarRecordatoriosRachaUseCase
 import com.rudoestudio.tiempofuera.domain.sincronizacion.ErrorApi
+import com.rudoestudio.tiempofuera.widget.ActualizadorWidgetRacha
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
 import java.util.concurrent.TimeUnit
 
 /**
- * Cierra el día (M12.4) y vuelve a programar los recordatorios de racha (M12.2). En iOS
- * los dos corren cada vez que la app pasa a primer plano; aquí además cada hora, así que
- * la racha se cierra aunque no abras la app, y los recordatorios que Android borra al
- * reiniciar el teléfono regresan solos (WorkManager sí sobrevive al reinicio).
+ * Cierra el día (M12.4), vuelve a programar los recordatorios de racha (M12.2) y redibuja
+ * el widget (M13.2). En iOS los dos primeros corren cada vez que la app pasa a primer
+ * plano; aquí además cada hora, así que la racha se cierra aunque no abras la app, y los
+ * recordatorios que Android borra al reiniciar el teléfono regresan solos (WorkManager sí
+ * sobrevive al reinicio).
  *
  * Solo con el onboarding terminado: antes no hay perfil que cerrar.
  */
@@ -35,6 +37,7 @@ class FinDeDiaWorker @AssistedInject constructor(
     private val finDeDia: ProcesarFinDeDiaUseCase,
     private val recordatorios: ProgramarRecordatoriosRachaUseCase,
     private val onboarding: EstadoOnboardingRepository,
+    private val widget: ActualizadorWidgetRacha,
 ) : CoroutineWorker(contexto, parametros) {
 
     override suspend fun doWork(): Result {
@@ -56,6 +59,9 @@ class FinDeDiaWorker @AssistedInject constructor(
         } catch (e: Exception) {
             AppLogger.error(e, "FinDeDiaWorker")
             if (runAttemptCount < MAX_REINTENTOS) Result.retry() else Result.failure()
+        } finally {
+            // El día pudo cambiar ("racha activa hoy" vuelve a pendiente) o la racha cerrarse.
+            widget.actualizar()
         }
     }
 

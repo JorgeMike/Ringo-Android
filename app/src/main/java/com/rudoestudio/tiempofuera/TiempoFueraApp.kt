@@ -10,6 +10,7 @@ import com.rudoestudio.tiempofuera.data.racha.FinDeDiaWorker
 import com.rudoestudio.tiempofuera.data.sincronizacion.ProgramadorSincronizacion
 import com.rudoestudio.tiempofuera.domain.bloqueo.AtenderProteccionUseCase
 import com.rudoestudio.tiempofuera.domain.servicios.AlcanceApp
+import com.rudoestudio.tiempofuera.widget.ActualizadorWidgetRacha
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import dagger.hilt.android.HiltAndroidApp
@@ -33,6 +34,9 @@ class TiempoFueraApp : Application(), Configuration.Provider {
     @Inject
     lateinit var notificacionMision: NotificacionMisionEnCurso
 
+    @Inject
+    lateinit var widgetRacha: ActualizadorWidgetRacha
+
     /** Los workers reciben sus dependencias de Hilt (por eso el manifest apaga el arranque automático). */
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder().setWorkerFactory(fabricaWorkers).build()
@@ -44,6 +48,7 @@ class TiempoFueraApp : Application(), Configuration.Provider {
         FinDeDiaWorker.programar(this)
         FinDeDiaWorker.procesarAhora(this)
         notificacionMision.iniciar()
+        widgetRacha.iniciar()
         // Tras "Forzar detención" no corre nada nuestro hasta que se vuelve a abrir la app.
         alcance.launch { runCatching { atenderProteccion(avisarAtorada = false) }.onFailure { AppLogger.error(it, "TiempoFueraApp") } }
     }
