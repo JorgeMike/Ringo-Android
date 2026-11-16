@@ -44,6 +44,7 @@ import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
 import com.rudoestudio.tiempofuera.core.designsystem.PirataOne
 import com.rudoestudio.tiempofuera.core.designsystem.TiempoFueraTheme
 import com.rudoestudio.tiempofuera.core.preview.DatosPreview
+import com.rudoestudio.tiempofuera.core.sensores.inclinacionDelTelefono
 import com.rudoestudio.tiempofuera.domain.luchadores.Luchador
 import com.rudoestudio.tiempofuera.domain.luchadores.Rareza
 import com.rudoestudio.tiempofuera.domain.luchadores.TipoLuchador
@@ -70,8 +71,8 @@ private fun emoji(tipo: TipoLuchador) = when (tipo) {
 /**
  * Carta de un luchador (290x386) con fondo de su rareza, el luchador flotando, su nombre,
  * frase y tipo. Común y raro van centrados; épico y legendario con el nombre chueco. En
- * iOS: `TarjetaLuchadorView`. M6.12: allá la carta se inclina con el giroscopio
- * (`DeviceMotionService`); aquí todavía no.
+ * iOS: `TarjetaLuchadorView`. Se inclina siguiendo al teléfono (M6.12, en iOS
+ * `DeviceMotionService`): ver `inclinacionDelTelefono`.
  */
 @Composable
 fun TarjetaLuchador(luchador: Luchador, modifier: Modifier = Modifier) {
@@ -85,6 +86,7 @@ fun TarjetaLuchador(luchador: Luchador, modifier: Modifier = Modifier) {
 
     Box(
         modifier
+            .inclinacionDelTelefono()
             .size(290.dp, 386.dp)
             .shadow(if (e.brillo == Color.Transparent) 16.dp else 24.dp, FORMA_TARJETA, ambientColor = e.brillo, spotColor = e.brillo)
             .clip(FORMA_TARJETA),
