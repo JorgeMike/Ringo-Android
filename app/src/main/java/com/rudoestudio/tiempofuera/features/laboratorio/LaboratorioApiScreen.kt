@@ -114,6 +114,11 @@ fun LaboratorioApiScreen(
         BotonL(ColoresTF.Celeste, "Aviso de uso en 1 min", alTocar = viewModel::avisarEnUnMinuto, habilitado = !ocupado)
         BotonL(ColoresTF.Verde, "Quitar bloqueos", alTocar = viewModel::quitarBloqueos, habilitado = !ocupado)
 
+        Text("Celebraciones (solo se ven, no dan nada)", style = MaterialTheme.typography.headlineMedium, color = ColoresTF.Blanco)
+        BotonL(ColoresTF.Celeste, "Racha activada", alTocar = { viewModel.verCelebracion(LaboratorioApiViewModel.Celebracion.RACHA) })
+        BotonL(ColoresTF.Celeste, "Misión completada", alTocar = { viewModel.verCelebracion(LaboratorioApiViewModel.Celebracion.MISION) })
+        BotonL(ColoresTF.Celeste, "Lucha ganada", alTocar = { viewModel.verCelebracion(LaboratorioApiViewModel.Celebracion.LUCHA) })
+
         bitacora.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = ColoresTF.Blanco, modifier = Modifier.fillMaxWidth()) }
     }
 }

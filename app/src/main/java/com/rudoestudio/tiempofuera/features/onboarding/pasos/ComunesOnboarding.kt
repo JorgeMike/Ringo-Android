@@ -37,6 +37,7 @@ import com.rudoestudio.tiempofuera.core.designsystem.PirataOne
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BotonS
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.DiagonalShape
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IconoBotonS
+import com.rudoestudio.tiempofuera.core.designsystem.componentes.ImagenIos1x
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoConSombra
 
 // Piezas que se repiten en los pasos del onboarding de iOS (allá copiadas en cada vista).
@@ -82,7 +83,7 @@ internal fun FondoOnboarding(
 internal fun PreguntaDecorada(texto: String, modifier: Modifier = Modifier, tamano: TextUnit = 36.sp, bajarLineas: Dp = 0.dp) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy((-2).dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(painterResource(R.drawable.linea_decor_l), null, Modifier.offset(y = bajarLineas))
+            ImagenIos1x(R.drawable.linea_decor_l, Modifier.offset(y = bajarLineas))
             TextoConSombra(
                 texto,
                 estilo = TextStyle(fontFamily = PirataOne, fontSize = tamano, textAlign = TextAlign.Center),
@@ -90,9 +91,9 @@ internal fun PreguntaDecorada(texto: String, modifier: Modifier = Modifier, tama
                 alineacion = TextAlign.Center,
                 modifier = Modifier.weight(1f, fill = false),
             )
-            Image(painterResource(R.drawable.linea_decor_r), null, Modifier.offset(y = bajarLineas))
+            ImagenIos1x(R.drawable.linea_decor_r, Modifier.offset(y = bajarLineas))
         }
-        Image(painterResource(R.drawable.linea_decor_c), null)
+        ImagenIos1x(R.drawable.linea_decor_c)
     }
 }
 

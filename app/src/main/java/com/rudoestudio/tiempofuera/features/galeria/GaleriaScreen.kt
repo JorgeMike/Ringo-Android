@@ -52,6 +52,7 @@ import com.rudoestudio.tiempofuera.core.designsystem.componentes.EtiquetaHora
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.FondoLuchador
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.HeaderPuntos
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IconoBotonS
+import com.rudoestudio.tiempofuera.core.designsystem.componentes.ImagenIos1x
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.ImagenPixel
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.TarjetaLuchador
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.IndicadorNivelLuchador
@@ -161,6 +162,11 @@ fun GaleriaScreen(alVolver: () -> Unit) {
 
         Seccion("Tarjeta de luchador · M7.7") {
             TarjetaLuchador(DatosPreview.luchadorSeleccionado)
+        }
+
+        Seccion("Imagen de iOS a 1x") {
+            // PNG de `drawable-nodpi`: cada pixel es un dp, como un punto en iOS.
+            ImagenIos1x(R.drawable.racha_badge)
         }
 
         Seccion("Imagen pixel") {

@@ -16,9 +16,15 @@ import com.rudoestudio.tiempofuera.domain.bloqueo.UsoApps
 import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionGrupoApps
 import com.rudoestudio.tiempofuera.domain.configuracion.ConfiguracionGrupoAppsRepository
 import com.rudoestudio.tiempofuera.domain.configuracion.TipoGrupoApps
+import com.rudoestudio.tiempofuera.domain.ligas.RecompensaNivel
+import com.rudoestudio.tiempofuera.domain.luchadores.Rareza
+import com.rudoestudio.tiempofuera.domain.misiones.RecompensaMision
 import com.rudoestudio.tiempofuera.domain.onboarding.EstadoOnboardingRepository
+import com.rudoestudio.tiempofuera.domain.perfil.UserProfileRepository
+import com.rudoestudio.tiempofuera.domain.recompensas.FlujoRecompensa
+import com.rudoestudio.tiempofuera.domain.recompensas.PantallaRecompensa
+import com.rudoestudio.tiempofuera.features.recompensas.PresentadorRecompensas
 import com.rudoestudio.tiempofuera.servicios.bloqueo.PermisosBloqueo
-import java.time.Duration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,6 +32,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.Duration
 import javax.inject.Inject
 
 /**
@@ -47,6 +54,8 @@ class LaboratorioApiViewModel @Inject constructor(
     private val configuraciones: ConfiguracionGrupoAppsRepository,
     private val uso: UsoApps,
     private val estadoOnboarding: EstadoOnboardingRepository,
+    private val presentador: PresentadorRecompensas,
+    private val perfiles: UserProfileRepository,
 ) : ViewModel() {
 
     val urlApi: String = BuildConfig.API_URL
@@ -129,6 +138,26 @@ class LaboratorioApiViewModel @Inject constructor(
     // endregion
 
     /** Al terminar, `RootScreen` cambia solo al onboarding. */
+    /** Abre una celebración sin ganarla: no da nada (solo para ver cómo se ve). */
+    fun verCelebracion(cual: Celebracion) {
+        viewModelScope.launch {
+            val recompensa = RecompensaMision(exp = 50, puntosPoder = 30, monedas = 20)
+            val luchador = runCatching { perfiles.obtenerPerfil().luchadorSeleccionado }.getOrNull() ?: return@launch
+            presentador.presentar(
+                when (cual) {
+                    Celebracion.RACHA -> FlujoRecompensa.RachaActivada(7, recompensa)
+                    Celebracion.MISION -> FlujoRecompensa.MisionCompletada(recompensa)
+                    Celebracion.LUCHA -> FlujoRecompensa.NivelLiga(
+                        emptyList(), null, luchador,
+                        PantallaRecompensa.LuchaGanada(RecompensaNivel(puntosPoder = 120, monedas = 50, sobres = listOf(Rareza.RARO, Rareza.EPICO)), luchador, null),
+                    )
+                },
+            )
+        }
+    }
+
+    enum class Celebracion { RACHA, MISION, LUCHA }
+
     fun repetirOnboarding() = ejecutar("Repetir onboarding") {
         estadoOnboarding.reiniciar()
         "Onboarding desde el paso 0"

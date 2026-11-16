@@ -47,6 +47,7 @@ import com.rudoestudio.tiempofuera.R
 import com.rudoestudio.tiempofuera.core.designsystem.ColoresTF
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.BotonL
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.DiagonalShape
+import com.rudoestudio.tiempofuera.core.designsystem.componentes.ImagenIos1x
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.ImagenPixel
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoConSombra
 import com.rudoestudio.tiempofuera.core.designsystem.componentes.TextoContorno
@@ -142,22 +143,29 @@ internal fun RachaActivadaPantalla(dias: Int, luchador: Int?, alContinuar: () ->
             Image(painterResource(R.drawable.estrella2_fondo), null, colorFilter = amarillo, modifier = Modifier.wrapContentSize(unbounded = true).offset(40.dp, (-50).dp).pop(v > 1))
             Image(painterResource(R.drawable.estrella3_fondo), null, colorFilter = amarillo, modifier = Modifier.wrapContentSize(unbounded = true).offset(30.dp, (-60).dp).pop(v > 2))
         }
-        Column(Modifier.fillMaxSize().safeDrawingPadding().padding(bottom = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        // Los 8 dp entre elementos son los del `VStack` de iOS: sin ellos, con los mismos
+        // traslapes, el número quedaba encima de "días de racha" y el luchador del número.
+        Column(
+            Modifier.fillMaxSize().safeDrawingPadding().padding(bottom = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             Spacer(Modifier.weight(1f))
             ImagenPixel(luchador ?: R.drawable.ringo, 280.dp, Modifier.offset(y = 48.dp).espiralAlAparecer(v > 3))
             Box(contentAlignment = Alignment.Center) {
-                Image(painterResource(R.drawable.racha_badge), null, Modifier.pop(v > 4))
+                ImagenIos1x(R.drawable.racha_badge, Modifier.pop(v > 4))
                 Row(Modifier.offset(8.dp, 10.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     TextoContorno("$dias", pirata(48), ColoresTF.Blanco, Color.Black, 5.dp, Modifier.pop(v > 5))
                     Image(painterResource(R.drawable.racha_icon), null, Modifier.pop(v > 6, rebote = 0.4f))
                 }
             }
-            TextoContorno("días de racha", pirata(36), ColoresTF.Blanco, Color.Black, 5.dp, Modifier.offset(y = (-46).dp).aparece(v > 7))
+            // iOS sube 46; aquí 30: con Pirata One en Android tapaba el pie del número y del fueguito.
+            TextoContorno("días de racha", pirata(36), ColoresTF.Blanco, Color.Black, 5.dp, Modifier.offset(y = (-30).dp).aparece(v > 7))
             TextoContorno(
                 "Lo estás haciendo increíble y debes sentirte orgulloso de ello.",
                 arvo(18), ColoresTF.Blanco, Color.Black, 2.dp,
                 alineacion = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 46.dp).offset(y = (-34).dp).aparece(v > 8),
+                modifier = Modifier.padding(horizontal = 46.dp).offset(y = (-18).dp).aparece(v > 8),
             )
             Spacer(Modifier.weight(1f))
             BotonL(ColoresTF.Celeste, "¡¡VAMOOOOOS!!", alTocar = alContinuar, habilitado = v > 9, modifier = Modifier.pop(v > 9))
