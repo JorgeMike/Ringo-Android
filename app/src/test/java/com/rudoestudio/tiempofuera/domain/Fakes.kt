@@ -89,10 +89,16 @@ class NotificacionesFake : NotificationService {
         mostradas += id to cuerpo
     }
 
-    override fun programarNotificacion(id: String, titulo: String, cuerpo: String, fecha: Instant) = Unit
+    /** Las que siguen programadas: cancelar las quita. */
+    val programadas = linkedMapOf<String, Instant>()
+
+    override fun programarNotificacion(id: String, titulo: String, cuerpo: String, fecha: Instant) {
+        programadas[id] = fecha
+    }
 
     override fun cancelarNotificacion(id: String) {
         canceladas += id
+        programadas.remove(id)
     }
 }
 

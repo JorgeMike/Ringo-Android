@@ -25,6 +25,7 @@ import com.rudoestudio.tiempofuera.domain.onboarding.PerfilOnboardingExistente
 import com.rudoestudio.tiempofuera.domain.perfil.ActivarRachaUseCase
 import com.rudoestudio.tiempofuera.domain.perfil.HistoricoRacha
 import com.rudoestudio.tiempofuera.domain.perfil.ProcesarFinDeDiaUseCase
+import com.rudoestudio.tiempofuera.domain.perfil.ProgramarRecordatoriosRachaUseCase
 import com.rudoestudio.tiempofuera.domain.perfil.ProgresoDiario
 import com.rudoestudio.tiempofuera.domain.perfil.PropositoUsuario
 import com.rudoestudio.tiempofuera.domain.perfil.RecordatorioRacha
@@ -68,6 +69,33 @@ class CasosDeUsoTest {
     private fun finDeDia(sueno: SuenoFake = SuenoFake()) = ProcesarFinDeDiaUseCase(perfiles, historico, api, sueno, reloj(hoy))
 
     private fun instante(hora: Int, minuto: Int = 0) = reloj(hoy, hora, minuto).instant()
+
+    private fun recordatorios(hora: Int) = ProgramarRecordatoriosRachaUseCase(historico, notificaciones, reloj(hoy, hora))
+
+    @Test
+    fun `los recordatorios cubren la semana sin los que ya pasaron`() = runTest {
+        recordatorios(hora = 15)()
+        val ids = notificaciones.programadas.keys
+        // Hoy solo queda el de las 18; los otros 6 días llevan los 3.
+        assertEquals(1 + 6 * 3, ids.size)
+        assertTrue(RecordatorioRacha.identificador(hoy, 18) in ids)
+        assertFalse(RecordatorioRacha.identificador(hoy, 14) in ids)
+        // Volver a programar no duplica.
+        recordatorios(hora = 15)()
+        assertEquals(19, notificaciones.programadas.size)
+    }
+
+    @Test
+    fun `con la racha activada hoy no hay recordatorios hoy, pero un dia protegido si`() = runTest {
+        historico.guardarRegistro(HistoricoRacha.protegido(hoy))
+        recordatorios(hora = 8)()
+        assertTrue(RecordatorioRacha.identificador(hoy, 10) in notificaciones.programadas)
+
+        historico.guardarRegistro(HistoricoRacha.completado(hoy))
+        recordatorios(hora = 8)()
+        assertFalse(RecordatorioRacha.horas.any { RecordatorioRacha.identificador(hoy, it) in notificaciones.programadas })
+        assertTrue(RecordatorioRacha.identificador(hoy.plusDays(1), 10) in notificaciones.programadas)
+    }
 
     // region Racha
 

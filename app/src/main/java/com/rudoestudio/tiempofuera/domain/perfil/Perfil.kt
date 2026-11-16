@@ -215,4 +215,14 @@ object RecordatorioRacha {
         "racha.recordatorio.%04d%02d%02d.%02d".format(fecha.year, fecha.monthValue, fecha.dayOfMonth, hora)
 
     fun fecha(dia: LocalDate, hora: Int): LocalDateTime = dia.atTime(hora, 0)
+
+    /** En iOS: "Activa tu racha de hoy". */
+    const val TITULO = "Activa tu racha de hoy"
+
+    /** En iOS siempre es "Completa una misión para mantener tu racha."; aquí sube el tono con la hora. */
+    fun cuerpo(hora: Int): String = when {
+        hora < 12 -> "Échate una misión y arranca el día con todo."
+        hora < 17 -> "Una misión y tu racha sigue viva. Tú puedes, campeón."
+        else -> "¡Se te va el día! Completa una misión para no perder tu racha."
+    }
 }

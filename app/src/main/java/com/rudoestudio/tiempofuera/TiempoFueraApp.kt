@@ -5,6 +5,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.rudoestudio.tiempofuera.core.logging.AppLogger
 import com.rudoestudio.tiempofuera.data.bloqueo.VigilanteProteccionWorker
+import com.rudoestudio.tiempofuera.data.racha.FinDeDiaWorker
 import com.rudoestudio.tiempofuera.data.sincronizacion.ProgramadorSincronizacion
 import com.rudoestudio.tiempofuera.domain.bloqueo.AtenderProteccionUseCase
 import com.rudoestudio.tiempofuera.domain.servicios.AlcanceApp
@@ -36,6 +37,8 @@ class TiempoFueraApp : Application(), Configuration.Provider {
         super.onCreate()
         sincronizacion.programarPeriodica()
         VigilanteProteccionWorker.programar(this)
+        FinDeDiaWorker.programar(this)
+        FinDeDiaWorker.procesarAhora(this)
         // Tras "Forzar detención" no corre nada nuestro hasta que se vuelve a abrir la app.
         alcance.launch { runCatching { atenderProteccion(avisarAtorada = false) }.onFailure { AppLogger.error(it, "TiempoFueraApp") } }
     }

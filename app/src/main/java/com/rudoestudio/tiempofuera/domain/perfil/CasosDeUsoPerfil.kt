@@ -12,8 +12,7 @@ import java.time.Instant
 import java.time.LocalDate
 import javax.inject.Inject
 
-// Casos de uso de Domain/UseCases/UserProfile de iOS. `ProgramarRecordatoriosRachaUseCase`
-// va con las notificaciones (M12.2).
+// Casos de uso de Domain/UseCases/UserProfile de iOS.
 
 /** En iOS: `ManejoMonedasUseCase`. */
 class ManejoMonedasUseCase @Inject constructor(
@@ -88,6 +87,39 @@ class ActivarRachaUseCase @Inject constructor(
 
     private fun cancelarRecordatorios(fecha: LocalDate) {
         RecordatorioRacha.horas.forEach { notificaciones.cancelarNotificacion(RecordatorioRacha.identificador(fecha, it)) }
+    }
+}
+
+/**
+ * Recordatorios para activar la racha (M12.2): a las 10, 14 y 18 h, una semana adelante.
+ * Hoy no hay si la racha ya se activó (un día protegido no cuenta). Se vuelve a programar
+ * todo cada vez, así que llamarlo seguido no duplica nada. En iOS:
+ * `ProgramarRecordatoriosRachaUseCase`.
+ */
+class ProgramarRecordatoriosRachaUseCase @Inject constructor(
+    private val historico: HistoricoRachaRepository,
+    private val notificaciones: NotificationService,
+    private val reloj: Clock,
+) {
+    suspend operator fun invoke() {
+        val ahora = reloj.instant()
+        val hoy = LocalDate.now(reloj)
+        val activadaHoy = historico.obtenerRegistro(hoy)?.let { !it.usoProtectorRacha } ?: false
+        for (desplazamiento in 0 until RecordatorioRacha.DIAS_PROGRAMADOS) {
+            val dia = hoy.plusDays(desplazamiento.toLong())
+            RecordatorioRacha.horas.forEach { notificaciones.cancelarNotificacion(RecordatorioRacha.identificador(dia, it)) }
+            if (desplazamiento == 0 && activadaHoy) continue
+            for (hora in RecordatorioRacha.horas) {
+                val fecha = RecordatorioRacha.fecha(dia, hora).atZone(reloj.zone).toInstant()
+                if (!fecha.isAfter(ahora)) continue
+                notificaciones.programarNotificacion(
+                    id = RecordatorioRacha.identificador(dia, hora),
+                    titulo = RecordatorioRacha.TITULO,
+                    cuerpo = RecordatorioRacha.cuerpo(hora),
+                    fecha = fecha,
+                )
+            }
+        }
     }
 }
 
