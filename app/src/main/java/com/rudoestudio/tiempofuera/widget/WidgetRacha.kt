@@ -22,6 +22,8 @@ import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
 import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
+import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
@@ -83,12 +85,17 @@ class WidgetRacha : GlanceAppWidget() {
 
     @Composable
     private fun Contenido(estado: EstadoWidgetRacha?, sprite: Bitmap?) {
-        val base = GlanceModifier
-            .fillMaxSize()
-            .background(ColoresTF.Azul)
-            .cornerRadius(20.dp)
-            .padding(10.dp)
-            .clickable(actionStartActivity<MainActivity>())
+        Box(GlanceModifier.fillMaxSize().cornerRadius(20.dp).clickable(actionStartActivity<MainActivity>())) {
+            // Los rayos azules del onboarding, oscurecidos para que el texto se lea.
+            Image(ImageProvider(R.drawable.patron_azul), null, GlanceModifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            Box(GlanceModifier.fillMaxSize().background(ColoresTF.Azul.copy(alpha = 0.6f))) {}
+            Interior(estado, sprite)
+        }
+    }
+
+    @Composable
+    private fun Interior(estado: EstadoWidgetRacha?, sprite: Bitmap?) {
+        val base = GlanceModifier.fillMaxSize().padding(10.dp)
         if (estado == null) {
             Column(base, verticalAlignment = Alignment.CenterVertically, horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Abre Tiempo Fuera para empezar tu racha", style = TextStyle(color = Blanco, fontSize = 13.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center))
